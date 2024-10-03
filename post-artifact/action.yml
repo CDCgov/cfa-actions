@@ -1,0 +1,126 @@
+name: post-artifact
+description: |
+  Creates a post in the PR linking to an artifact for easy access.
+  Subsequent runs will update the comment.
+inputs:
+  artifact-name:
+    description: |
+      Name of the artifact to upload (should match the one passed to
+      `actions/upload-artifact`).
+    required: false
+    default: 'artifact'
+  message:
+    description: |
+      Message template to be posted in the PR. The message should include
+      a placeholder for { artifact-url }. Optionally, the { artifact-name }
+      placeholder can be used to include the artifact name in the message.
+    required: false
+    default: 'Thank you for your contribution @${{ github.actor }} :rocket:! Your { artifact-name } is ready for download :point_right: [here]({ artifact-url }) :point_left:!'
+  python:
+    description: |
+      The path to the Python executable. This input is optional and
+      defaults to 'python'.
+    required: false
+    default: 'python'
+  gh-token:
+    description: |
+      The GitHub token to use for the API calls. 
+    required: true
+runs:
+  using: 'composite'
+
+  steps:
+
+    # https://docs.github.com/en/rest/actions/artifacts?apiVersion=2022-11-28#list-workflow-run-artifacts
+    - name: List artifacts
+      if: ${{ github.event_name == 'pull_request' }}
+      run: |
+        gh api \
+          -H "Accept: application/vnd.github+json" \
+          -H "X-GitHub-Api-Version: 2022-11-28" \
+          repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts > _artifacts-${{ github.sha }}.json
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.gh-token }}
+
+    - name: Id artifact
+      if: ${{ github.event_name == 'pull_request' }}
+      run: ${{ inputs.python }} ${GITHUB_ACTION_PATH}/scripts/id-artifact.py
+      shell: bash
+      env:
+        ARTIFACT_NAME: ${{ inputs.artifact-name }}
+        SHA: ${{ github.sha }}
+
+    - name: Get artifact id
+      if: ${{ github.event_name == 'pull_request' }}
+      id: artifact-id
+      run: |
+        echo "VALUE=$(cat '${{ github.sha }}_artifact_id')" >> $GITHUB_OUTPUT
+      shell: bash
+
+    - name: Compose message
+      if: ${{ github.event_name == 'pull_request' }}
+      run: ${{ inputs.python }} ${GITHUB_ACTION_PATH}/scripts/compose-msg.py
+      shell: bash
+      env:
+        ARTIFACT_NAME: ${{ inputs.artifact-name }}
+        MESSAGE: ${{ inputs.message }}
+        SERVER_URL: ${{ github.server_url }}
+        REPOSITORY: ${{ github.repository }}
+        RUN_ID: ${{ github.run_id }}
+        ARTIFACT_ID: ${{ steps.artifact-id.outputs.VALUE }}
+        SHA: ${{ github.sha }}
+        
+    - name: Get the event
+      if: ${{ github.event_name == 'pull_request' }}
+      run: |
+        gh api \
+          -H "Accept: application/vnd.github+json" \
+          -H "X-GitHub-Api-Version: 2022-11-28" \
+          repos/${{ github.repository }}/issues/${{ github.event.number }}/comments > _events-${{ github.sha }}.json
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.gh-token }}
+
+    - name: Find the comment
+      if: ${{ github.event_name == 'pull_request' }}
+      run: ${{ inputs.python }} ${GITHUB_ACTION_PATH}/scripts/find-comment.py
+      shell: bash
+      env:
+        SHA: ${{ github.sha }}
+        ARTIFACT_NAME: ${{ inputs.artifact-name }}
+
+    - name: Putting the contents of _msg.txt into an environment var
+      if: ${{ github.event_name == 'pull_request' }}
+      id: set-env
+      run: |
+        echo "MSG=$(cat msg-${{ github.sha }}.txt)" >> $GITHUB_OUTPUT
+        echo "ID=$(cat _ID-${{ github.sha }})" >> $GITHUB_OUTPUT
+        echo "FOUND=$(cat _ID-${{ github.sha }}_found)" >> $GITHUB_OUTPUT
+      shell: bash
+
+    # See:
+    # https://docs.github.com/en/rest/issues/comments?apiVersion=2022-11-28#update-an-issue-comment
+    - name: Add comment
+      if: ${{ github.event_name == 'pull_request' && steps.set-env.outputs.FOUND == 'false' }}
+      run: |
+        echo "No comment from github-bot found, adding a new one."
+        gh pr comment -R ${{ github.repository }} \
+          ${{ github.event.number }} -b "${{ steps.set-env.outputs.MSG }}"
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.gh-token }}
+    
+    - name: Update comment
+      if: ${{ github.event_name == 'pull_request' && steps.set-env.outputs.FOUND == 'true' }}
+      run: |
+        echo "Editing original comment id: ${{ steps.set-env.outputs.ID }}."
+        gh api \
+          --method PATCH \
+          -H "Accept: application/vnd.github+json" \
+          -H "X-GitHub-Api-Version: 2022-11-28" \
+          repos/${{ github.repository }}/issues/comments/${{ steps.set-env.outputs.ID }} \
+          -f "body=${{ steps.set-env.outputs.MSG }}"
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.gh-token }}

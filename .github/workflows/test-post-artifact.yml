@@ -1,0 +1,74 @@
+name: Test PR post artifact
+
+on:
+  pull_request:
+    branches: [main]
+  pull_request_target: 
+    paths:
+      - '.github/workflows/test-post-artifact.yml'
+      - 'post-artifact/action.yml'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/test-post-artifact.yml'
+      - 'post-artifact/action.yml'
+
+jobs:
+  build-artifact-container:
+    runs-on: ubuntu-latest
+    container: rocker/tidyverse:4.4.0
+
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v4
+        name: Checkout code
+
+      - uses: actions/upload-artifact@v4
+        name: Upload artifact
+        with:
+          path: './README.md'
+          name: 'readme-rocker'
+
+      - name: Install gh
+        run: |
+          apt update 
+          apt install -y --no-install-recommends gh
+      
+      - name: Post the artifact
+        uses: ./post-artifact
+        with:
+          artifact-name: 'readme-rocker'
+          python: 'python3'
+          gh-token: ${{ secrets.GITHUB_TOKEN }}
+  
+  build-artifact:
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v4
+        name: Checkout code
+
+      - uses: actions/upload-artifact@v4
+        name: Upload artifact
+        with:
+          path: './README.md'
+          name: ${{ format('readme-{0}', matrix.os) }}
+
+      - name: Post the artifact
+        uses: ./post-artifact
+        with:
+          artifact-name: ${{ format('readme-{0}', matrix.os) }}
+          gh-token: ${{ secrets.GITHUB_TOKEN }}
