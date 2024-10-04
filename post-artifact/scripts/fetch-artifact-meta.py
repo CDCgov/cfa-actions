@@ -7,7 +7,7 @@ import os
 ARTIFACT_NAME = os.environ.get('ARTIFACT_NAME')
 SHA = os.environ.get('SHA')
 
-def find_artifact() -> str:
+def find_artifact() -> dict:
     fn = '_artifacts-' + SHA + '.json'
     with open(fn, 'r') as file:
         data = json.load(file)
@@ -29,17 +29,17 @@ def find_artifact() -> str:
             continue
 
         if ARTIFACT_NAME == name:
-            return str(id)
+            return dict(id=str(id), expires_at=expires_at)
     return ''
 
-id = find_artifact()
+meta = find_artifact()
 
-if id == '':
+if meta.id == '':
     print(f"Artifact { ARTIFACT_NAME } not found.")
     sys.exit(1)
 
 with open(SHA + '_artifact_id', 'w') as file:
-    file.write(id)
+    file.write(meta.id)
 
 with open(SHA + '_artifact_expires_at', 'w') as file:
-    file.write(expires_at)
+    file.write(meta.expires_at)
