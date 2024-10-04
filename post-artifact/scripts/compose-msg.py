@@ -13,7 +13,7 @@ ARTIFACT_ID = os.environ.get('ARTIFACT_ID')
 SHA = os.environ.get('SHA')
 EXP_DATE = os.environ.get('EXP_DATE')
 
-msg = "[]("+ re.sub(r'\s+', '_', ARTIFACT_NAME)+")"
+msg = "<!-- action-comment-id:"+ re.sub(r'\s+', '_', ARTIFACT_NAME)+" -->"
 msg = msg + MESSAGE
 
 updated = re.sub(
@@ -38,7 +38,7 @@ updated = re.sub(
 
 run_url = SERVER_URL + '/' + REPOSITORY + '/actions/runs/' + RUN_ID
 updated = updated + \
-    f'<br><sub>(The artifact expires on {EXP_DATE}. You can re-generate it by re-running the workflow <a href="{run_url}" target="_blank">here</a>)</sub>'
+    f'\n\n> ![IMPORTANT]\n> The artifact expires on {EXP_DATE}. You can re-generate it by re-running the workflow [here]({run_url}).'
 
 with open('msg-' + SHA + '.txt', 'w') as file:
     file.write(updated)

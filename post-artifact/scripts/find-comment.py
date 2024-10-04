@@ -16,7 +16,7 @@ def main(json_comments) -> str:
         return ''
 
     matching_msg = re.escape(
-        "[](" + re.sub(r'\s+', '_', ARTIFACT_NAME)+")"
+        "<!-- action-comment-id:" + re.sub(r'\s+', '_', ARTIFACT_NAME)+" -->"
         )
 
     # Now you can work with the 'data' object
