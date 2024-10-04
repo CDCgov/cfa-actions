@@ -39,7 +39,7 @@ if meta.get('id') == '':
     sys.exit(1)
 
 with open(SHA + '_artifact_id', 'w') as file:
-    file.write(meta..get('id'))
+    file.write(meta.get('id'))
 
 with open(SHA + '_artifact_expires_at', 'w') as file:
     file.write(meta.get('expires_at'))
