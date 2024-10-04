@@ -34,12 +34,12 @@ def find_artifact() -> dict:
 
 meta = find_artifact()
 
-if meta.id == '':
+if meta.get('id') == '':
     print(f"Artifact { ARTIFACT_NAME } not found.")
     sys.exit(1)
 
 with open(SHA + '_artifact_id', 'w') as file:
-    file.write(meta.id)
+    file.write(meta..get('id'))
 
 with open(SHA + '_artifact_expires_at', 'w') as file:
-    file.write(meta.expires_at)
+    file.write(meta.get('expires_at'))
