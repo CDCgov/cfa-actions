@@ -20,6 +20,7 @@ def find_artifact() -> str:
 
         name = artifacts[i].get('name')
         id = artifacts[i].get('id')
+        expires_at = artifacts[i].get('expires_at')
 
         if not name:
             continue
@@ -39,3 +40,6 @@ if id == '':
 
 with open(SHA + '_artifact_id', 'w') as file:
     file.write(id)
+
+with open(SHA + '_artifact_expires_at', 'w') as file:
+    file.write(expires_at)

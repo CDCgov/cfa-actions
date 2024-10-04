@@ -45,7 +45,7 @@ runs:
 
     - name: Id artifact
       if: ${{ github.event_name == 'pull_request' }}
-      run: ${{ inputs.python }} ${GITHUB_ACTION_PATH}/scripts/id-artifact.py
+      run: ${{ inputs.python }} ${GITHUB_ACTION_PATH}/scripts/fetch-artifact-meta.py
       shell: bash
       env:
         ARTIFACT_NAME: ${{ inputs.artifact-name }}
@@ -53,9 +53,10 @@ runs:
 
     - name: Get artifact id
       if: ${{ github.event_name == 'pull_request' }}
-      id: artifact-id
+      id: artifact-meta
       run: |
-        echo "VALUE=$(cat '${{ github.sha }}_artifact_id')" >> $GITHUB_OUTPUT
+        echo "id=$(cat '${{ github.sha }}_artifact_id')" >> $GITHUB_OUTPUT
+        echo "expires_at=$(cat '${{ github.sha }}_artifact_expires_at')" >> $GITHUB_OUTPUT
       shell: bash
 
     - name: Compose message
@@ -68,8 +69,9 @@ runs:
         SERVER_URL: ${{ github.server_url }}
         REPOSITORY: ${{ github.repository }}
         RUN_ID: ${{ github.run_id }}
-        ARTIFACT_ID: ${{ steps.artifact-id.outputs.VALUE }}
+        ARTIFACT_ID: ${{ steps.artifact-meta.outputs.id }}
         SHA: ${{ github.sha }}
+        EXP_DATE: ${{ steps.artifact-meta.outputs.expires_at }}
         
     - name: Get the event
       if: ${{ github.event_name == 'pull_request' }}
