@@ -38,7 +38,7 @@ updated = re.sub(
 
 run_url = SERVER_URL + '/' + REPOSITORY + '/actions/runs/' + RUN_ID
 updated = updated + \
-    f'\n\n> ![IMPORTANT]\n> The artifact expires on {EXP_DATE}. You can re-generate it by re-running the workflow [here]({run_url}).'
+    f'\n\n> [!IMPORTANT]\n> The artifact expires on {EXP_DATE}. You can re-generate it by re-running the workflow [here]({run_url}).'
 
 with open('msg-' + SHA + '.txt', 'w') as file:
     file.write(updated)
