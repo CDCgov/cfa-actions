@@ -11,8 +11,6 @@ This repo contains personalized actions designed by CDC's CFA team. Please use w
 
 - [post-artifact](./post-artifact): Post an artifact as a comment in a PR. Useful when you need to easily access a built element during a workflow such as a website, a report, etc.
   
-> [!NOTE]
-**General disclaimer** This repository was created for use by CDC programs to collaborate on public health related projects in support of the [CDC mission](https://www.cdc.gov/about/organization/mission.htm).  GitHub is not hosted by the CDC, but is a third party website used by CDC and its partners to share information and collaborate on software. CDC use of GitHub does not imply an endorsement of any one particular service, product, or enterprise. 
 
 ## Public Domain Standard Notice
 This repository constitutes a work of the United States Government and is not
@@ -67,3 +65,6 @@ published through the [CDC web site](http://www.cdc.gov).
 
 ## Additional Standard Notices
 Please refer to [CDC's Template Repository](https://github.com/CDCgov/template) for more information about [contributing to this repository](https://github.com/CDCgov/template/blob/main/CONTRIBUTING.md), [public domain notices and disclaimers](https://github.com/CDCgov/template/blob/main/DISCLAIMER.md), and [code of conduct](https://github.com/CDCgov/template/blob/main/code-of-conduct.md).
+
+> [!IMPORTANT]
+**General disclaimer** This repository was created for use by CDC programs to collaborate on public health related projects in support of the [CDC mission](https://www.cdc.gov/about/organization/mission.htm).  GitHub is not hosted by the CDC, but is a third party website used by CDC and its partners to share information and collaborate on software. CDC use of GitHub does not imply an endorsement of any one particular service, product, or enterprise. 
