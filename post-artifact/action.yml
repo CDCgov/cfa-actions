@@ -1,19 +1,21 @@
 name: post-artifact
 description: |
-  Creates a post in the PR linking to an artifact for easy access.
-  Subsequent runs will update the comment.
+  Posts a comment on a PR linking to an artifact uploaded in CI for easy access and reference.
+  Subsequent runs will update the comment with an updated link to the artifact.
 inputs:
   artifact-name:
     description: |
-      Name of the artifact to upload (should match the one passed to
+      Name of the artifact to which to link (should match the one passed to
       `actions/upload-artifact`).
     required: false
     default: 'artifact'
   message:
     description: |
-      Message template to be posted in the PR. The message should include
-      a placeholder for { artifact-url }. Optionally, the { artifact-name }
-      placeholder can be used to include the artifact name in the message.
+       Message template to be posted in the PR, as Github-flavored 
+       Markdown (GFM). Use the placeholder `{ artifact-url }` to 
+       reference the URL of the uploaded artifact, either raw 
+       or as GFM formatted link. Use the `{ artifact-name }` 
+       placeholder to include the artifact name in the message.
     required: false
     default: 'Thank you for your contribution @${{ github.actor }} :rocket:! Your { artifact-name } is ready for download :point_right: [here]({ artifact-url }) :point_left:!'
   python:
@@ -32,7 +34,7 @@ runs:
   steps:
 
     # https://docs.github.com/en/rest/actions/artifacts?apiVersion=2022-11-28#list-workflow-run-artifacts
-    - name: List artifacts
+    - name: "Get list of available artifacts and store as .json"
       if: ${{ github.event_name == 'pull_request' }}
       run: |
         gh api \
@@ -43,7 +45,7 @@ runs:
       env:
         GH_TOKEN: ${{ inputs.gh-token }}
 
-    - name: Id artifact
+    - name: Fetch metadata for the target artifact
       if: ${{ github.event_name == 'pull_request' }}
       run: ${{ inputs.python }} ${GITHUB_ACTION_PATH}/scripts/fetch-artifact-meta.py
       shell: bash

@@ -36,7 +36,7 @@ updated = re.sub(
     updated
     )
 
-run_url = SERVER_URL + '/' + REPOSITORY + '/actions/runs/' + RUN_ID
+run_url = f"{SERVER_URL}/{REPOSITORY}/actions/runs/{RUN_ID}"
 updated = updated + \
     f'\n<sub>(The artifact expires on {EXP_DATE}. You can re-generate it by re-running the workflow [here]({run_url}).)</sub>'
 

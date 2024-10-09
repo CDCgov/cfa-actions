@@ -6,7 +6,7 @@
 |---------------|-----------------------------------------------------------------------------------------------------------------------------------------|----------|----------------|
 | `gh-token`      | The GitHub token to use for the API calls. | true | - |
 | `artifact-name` | Artifact name as in the `actions/upload-artifact` step. | false    | `artifact`     |
-| `message`       | Message template to be posted in the PR. The message should include a placeholder for { artifact-url }. Optionally, the { artifact-name } placeholder can be used to include the artifact name in the message. | false    | `'Thank you for your contribution ${{ github.actor }} :rocket:! Your { artifact-name } is ready for download :point_right: [here]({ artifact-url }) :point_left:!'` |
+| `message`       | Message template to be posted in the PR, as Github-flavored Markdown (GFM). Use the placeholder `{ artifact-url }` to reference the URL of the uploaded artifact, either raw or as GFM formatted link. Use the `{ artifact-name }` placeholder to include the artifact name in the message | false    | `'Thank you for your contribution ${{ github.actor }} :rocket:! Your { artifact-name } is ready for download :point_right: [here]({ artifact-url }) :point_left:!'` |
 | `python`        | The path to the Python executable. | false    | `'python'`       |
 
 This action only runs in PRs and requires the `pull-requests: write` permission. 
