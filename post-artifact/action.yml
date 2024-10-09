@@ -17,7 +17,10 @@ inputs:
        or as GFM formatted link. Use the `{ artifact-name }` 
        placeholder to include the artifact name in the message.
     required: false
-    default: 'Thank you for your contribution @${{ github.actor }} :rocket:! Your { artifact-name } is ready for download :point_right: [here]({ artifact-url }) :point_left:!'
+    default: |
+      Thank you for your contribution @${{ github.actor }} :rocket:!\Your { \
+      artifact-name } is ready for download :point_right: [here]({ \
+      artifact-url }) :point_left:!
   python:
     description: |
       The path to the Python executable. This input is optional and
