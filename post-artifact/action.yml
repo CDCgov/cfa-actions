@@ -35,7 +35,6 @@ runs:
 
     # https://docs.github.com/en/rest/actions/artifacts?apiVersion=2022-11-28#list-workflow-run-artifacts
     - name: "Get list of available artifacts and store as .json"
-      if: ${{ github.event_name == 'pull_request' }}
       run: |
         gh api \
           -H "Accept: application/vnd.github+json" \
@@ -46,7 +45,6 @@ runs:
         GH_TOKEN: ${{ inputs.gh-token }}
 
     - name: Fetch metadata for the target artifact
-      if: ${{ github.event_name == 'pull_request' }}
       run: ${{ inputs.python }} ${GITHUB_ACTION_PATH}/scripts/fetch-artifact-meta.py
       shell: bash
       env:
@@ -54,7 +52,6 @@ runs:
         SHA: ${{ github.sha }}
 
     - name: Get artifact id
-      if: ${{ github.event_name == 'pull_request' }}
       id: artifact-meta
       run: |
         echo "id=$(cat '${{ github.sha }}_artifact_id')" >> $GITHUB_OUTPUT
@@ -62,7 +59,6 @@ runs:
       shell: bash
 
     - name: Compose message
-      if: ${{ github.event_name == 'pull_request' }}
       run: ${{ inputs.python }} ${GITHUB_ACTION_PATH}/scripts/compose-msg.py
       shell: bash
       env:
@@ -76,7 +72,6 @@ runs:
         EXP_DATE: ${{ steps.artifact-meta.outputs.expires_at }}
         
     - name: Get the event
-      if: ${{ github.event_name == 'pull_request' }}
       run: |
         gh api \
           -H "Accept: application/vnd.github+json" \
@@ -87,7 +82,6 @@ runs:
         GH_TOKEN: ${{ inputs.gh-token }}
 
     - name: Find the comment
-      if: ${{ github.event_name == 'pull_request' }}
       run: ${{ inputs.python }} ${GITHUB_ACTION_PATH}/scripts/find-comment.py
       shell: bash
       env:
@@ -95,7 +89,6 @@ runs:
         ARTIFACT_NAME: ${{ inputs.artifact-name }}
 
     - name: Putting the contents of _msg.txt into an environment var
-      if: ${{ github.event_name == 'pull_request' }}
       id: set-env
       run: |
         echo "ID=$(cat _ID-${{ github.sha }})" >> $GITHUB_OUTPUT
@@ -105,7 +98,7 @@ runs:
     # See:
     # https://docs.github.com/en/rest/issues/comments?apiVersion=2022-11-28#update-an-issue-comment
     - name: Add comment
-      if: ${{ github.event_name == 'pull_request' && steps.set-env.outputs.FOUND == 'false' }}
+      if: ${{ steps.set-env.outputs.FOUND == 'false' }}
       run: |
         echo "No comment from github-bot found, adding a new one."
         gh pr comment -R ${{ github.repository }} \
@@ -115,7 +108,7 @@ runs:
         GH_TOKEN: ${{ inputs.gh-token }}
     
     - name: Update comment
-      if: ${{ github.event_name == 'pull_request' && steps.set-env.outputs.FOUND == 'true' }}
+      if: ${{ steps.set-env.outputs.FOUND == 'true' }}
       run: |
         echo "Editing original comment id: ${{ steps.set-env.outputs.ID }}."
         gh api \

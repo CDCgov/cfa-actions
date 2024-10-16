@@ -38,6 +38,7 @@ jobs:
           apt install -y --no-install-recommends gh
       
       - name: Post the artifact
+        if: ${{ github.event_name == 'pull_request' }}
         uses: ./post-artifact
         with:
           artifact-name: 'readme-rocker'
@@ -68,6 +69,7 @@ jobs:
           name: ${{ format('readme-{0}', matrix.os) }}
 
       - name: Post the artifact
+        if: ${{ github.event_name == 'pull_request' }}
         uses: ./post-artifact
         with:
           artifact-name: ${{ format('readme-{0}', matrix.os) }}

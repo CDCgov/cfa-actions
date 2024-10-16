@@ -36,6 +36,7 @@ Here are the contents of a job that (i) uploads an artifact using `actions/uploa
       # Post the artifact pulling the id from the `readme` step.
       - name: Post the artifact
         uses: CDCgov/cfa-actions/post-artifact@main
+        if: ${{ github.event_name == 'pull_request' }}
         with:
           artifact-name: readme
           gh-token: ${{ secrets.GITHUB_TOKEN }}
@@ -85,6 +86,7 @@ jobs:
       # Post the artifact pulling the id from the `readme` step.
       # The msg will refer to the arfitact as 'README file'.
       - name: Post the artifact
+        if: ${{ github.event_name == 'pull_request' }}
         uses: CDCgov/cfa-actions/post-artifact@main
         with:
           artifact-name: readme
