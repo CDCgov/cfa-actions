@@ -39,6 +39,7 @@ runs:
         echo "This action must only run in pull requests."
         echo "See https://github.com/CDCgov/cfa-actions for more information."
         exit 1
+      shell: bash
 
     # https://docs.github.com/en/rest/actions/artifacts?apiVersion=2022-11-28#list-workflow-run-artifacts
     - name: "Get list of available artifacts and store as .json"
