@@ -1,0 +1,118 @@
+name: twostep-container-build
+description: |
+  
+inputs:
+  container-file-1:
+    description: |
+      The first container file to build.
+    required: true
+  container-file-2: 
+    description: |
+      The second container file to build.
+    required: true
+  first-step-cache-key:
+    description: |
+      The key used to cache the first step of the process. Usually
+      generated using the `hashFiles` function.
+  image:
+    description: |
+      The image to build. For instance, cfa-prod-batch
+    required: true
+  username:
+    description: |
+      The username to use for the container registry login.
+    required: false
+    default: ''
+  password:
+    description: |
+      The password to use for the container registry login.
+    required: false
+    default: ''
+  registry:
+    description: |
+      The registry to use for the container registry login. For example, ghcr.io., cfaprodbatchcr.azurecr.io., etc.
+    required: true
+  main-branch-name:
+    description: |
+      The name of the main branch. For instance, main.
+    required: false
+    default: 'main'
+  main-branch-tag:
+    description: |
+      The tag to use for the main branch. For instance, latest.
+    required: false
+    default: 'latest'
+runs:
+  using: 'composite'
+
+  steps:
+
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+
+    - name: Getting the commit message
+      id: commit-message
+      run: echo "message=$(git log -1 --pretty=%s HEAD)" >> $GITHUB_OUTPUT
+      shell: bash
+
+    - name: Checking out the latest (may be merge if PR)
+      uses: actions/checkout@v4
+
+    # From: https://stackoverflow.com/a/58035262/2097171
+    - name: Extract branch name
+      shell: bash
+      run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+      id: branch-name
+
+    #########################################################################
+    # Getting the tag
+    # The tag will be used for both the docker image and the batch pool
+    #########################################################################
+    - name: Figure out tag (either latest if it is main or the branch name)
+      shell: bash
+      id: image-tag
+      run: |
+        if [ "${{ steps.branch-name.outputs.branch }}" = "${{ inputs.main-branch-name }}" ]; then
+          echo "tag=${{ inputs.main-branch-tag }}" >> $GITHUB_OUTPUT
+        else
+          echo "tag=${{ steps.branch-name.outputs.branch }}" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Check cache for base image
+      uses: actions/cache@v4
+      id: cache
+      with:
+        key: ${{ inputs.first-step-cache-key }}
+        lookup-only: true
+        path:
+          ${{ inputs.container-file-1 }}
+
+    - name: Login to the Container Registry
+      if: steps.cache.outputs.cache-hit != 'true' && inputs.username != ''
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ inputs.registry }}
+        username: ${{ inputs.username }}
+        password: ${{ inputs.password }}
+
+    - name: Build and push
+      if: steps.cache.outputs.cache-hit != 'true'
+      uses: docker/build-push-action@v6
+      with:
+        push: true
+        tags: |
+          ${{ inputs.registry }}/${{ inputs.image }}-dependencies:${{ steps.image-tag.outputs.tag }}
+        file: ${{ inputs.container-file-1 }}
+
+    - name: Build and push the main image
+      id: build_and_push_model_image
+      uses: docker/build-push-action@v6
+      with:
+        push: true # This can be toggled manually for tweaking.
+        tags: |
+          ${{ inputs.registry }}/${{ inputs.image }}:${{ steps.image-tag.outputs.tag }}
+        file: ./Dockerfile
+        build-args: |
+          TAG=${{ needs.build-dependencies-image.outputs.tag }}
