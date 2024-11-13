@@ -29,8 +29,9 @@ jobs:
         uses: ./twostep-container-build
         with:
           registry: ghcr.io/
+          username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-          container-file-1: twostep-container-build/example/Containerfile.dependencies
-          container-file-2: twostep-container-build/example/Containerfile
-          first-step-cache-key: ${{ hashFiles('twostep-container-build/example/Containerfile.dependencies') }}
+          container-file-1: twostep-container-build/examples/Containerfile.dependencies
+          container-file-2: twostep-container-build/examples/Containerfile
+          first-step-cache-key: ${{ hashFiles('twostep-container-build/examples/Containerfile.dependencies') }}
           image: cdcgov/cfa-actions

@@ -16,7 +16,7 @@ inputs:
       generated using the `hashFiles` function.
   image:
     description: |
-      The image to build. For instance, cfa-prod-batch
+      The image to build. For instance, cfa-prod-batch, or cdcgov/cfa-actions.
     required: true
   username:
     description: |
@@ -37,7 +37,7 @@ inputs:
     required: true
   main-branch-name:
     description: |
-      The name of the main branch. For instance, main.
+      The name of the repository's base branch. Defaults to main.
     required: false
     default: 'main'
   main-branch-tag:
