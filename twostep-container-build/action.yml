@@ -44,12 +44,12 @@ inputs:
       The tag to use for the main branch. For instance, latest.
     required: false
     default: 'latest'
-  push-image1:
+  push-image-1:
     description: |
       Whether to push the first image. For instance, true.
     required: false
     default: 'true'
-  push-image2:
+  push-image-2:
     description: |
       Whether to push the second image. For instance, true.
     required: false
@@ -113,7 +113,7 @@ runs:
       if: steps.cache.outputs.cache-hit != 'true'
       uses: docker/build-push-action@v6
       with:
-        push: ${{ inputs.push-image1 }}
+        push: ${{ inputs.push-image-1 }}
         tags: |
           ${{ inputs.registry }}${{ inputs.image }}-dependencies:${{ steps.image-tag.outputs.tag }}
         file: ${{ inputs.container-file-1 }}
@@ -122,9 +122,9 @@ runs:
       id: build_and_push_model_image
       uses: docker/build-push-action@v6
       with:
-        push: ${{ inputs.push-image2 }}
+        push: ${{ inputs.push-image-2 }}
         tags: |
           ${{ inputs.registry }}${{ inputs.image }}:${{ steps.image-tag.outputs.tag }}
-        file: ./Dockerfile
+        file: ${{ inputs.container-file-2 }}
         build-args: |
           TAG=${{ steps.image-tag.outputs.tag }}
