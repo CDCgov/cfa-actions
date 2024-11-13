@@ -127,7 +127,7 @@ runs:
         no-cache: true
         push: ${{ inputs.push-image-2 }}
         tags: |
-          ${{ inputs.registry }}${{ inputs.image }}:dependencies-${{ steps.image-tag.outputs.tag }}
+          ${{ inputs.registry }}${{ inputs.image }}:${{ steps.image-tag.outputs.tag }}
         file: ${{ inputs.container-file-2 }}
         build-args: |
-          TAG=${{ steps.image-tag.outputs.tag }}
+          TAG=dependencies-${{ steps.image-tag.outputs.tag }}
