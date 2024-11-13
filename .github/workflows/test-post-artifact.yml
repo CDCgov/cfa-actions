@@ -6,10 +6,6 @@ on:
     paths:
       - '.github/workflows/test-post-artifact.yml'
       - 'post-artifact/action.yml'
-  pull_request_target: 
-    paths:
-      - '.github/workflows/test-post-artifact.yml'
-      - 'post-artifact/action.yml'
   push:
     branches: [main]
     paths:
