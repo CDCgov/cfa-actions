@@ -25,6 +25,9 @@ jobs:
       - uses: actions/checkout@v4
         name: Checkout code
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Two-step build
         uses: ./twostep-container-build
         with:
