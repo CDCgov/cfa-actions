@@ -1,4 +1,4 @@
-# Build image in two steps
+# Build image in two steps: Caching dependencies
 
 This action will build a container image for a project in two steps and push the image to a container registry. During the first step, using the container file `container-file-1`, it will build and cache the image containing the dependencies of the main project. After the first step, a second build and push process happens based on the container file `container-file-2`. The `container-file-2` uses as base image the one created during the first step.
 
@@ -17,9 +17,9 @@ flowchart LR
 | `container-file-2` | Path to the second container file | true | |
 | `first-step-cache-key` | Cache key for the first step | true | |
 | `image` | Name of the image | true | |
-| `username` | Username for the registry | false | `''` |
-| `password` | Password for the registry | false | `''` |
-| `registry` | Registry to push the image to | false | `''` |
+| `username` | Username for the registry | true |  |
+| `password` | Password for the registry | true |  |
+| `registry` | Registry to push the image to | true |  |
 | `main-branch-name` | Name of the main branch | false | `'main'` |
 | `main-branch-tag` | Tag to use for the main branch | false | `'latest'` |
 | `push-image-1` | Push the image created during the first step | false | `false` |
@@ -60,11 +60,14 @@ jobs:
           registry: ghcr.io/
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
           # Paths to the container files
           container-file-1: Containerfile.dependencies
           container-file-2: Containerfile
+
           # We are using the dependency container for caching
           first-step-cache-key: ${{ hashFiles('Containerfile.dependencies') }}
+
           # The image to build includes the organization (that's how it is
           # on ghcr.io)
           image: cdcgov/cfa-actions

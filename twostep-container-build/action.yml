@@ -21,14 +21,11 @@ inputs:
   username:
     description: |
       The username to use for the container registry login.
-      Defaults to the GitHub actor.
-    required: false
-    default: ${{ github.actor }}
+    required: true
   password:
     description: |
       The password to use for the container registry login.
-    required: false
-    default: ''
+    required: true
   registry:
     description: |
       The registry to use for the container registry login
