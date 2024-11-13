@@ -2,6 +2,6 @@ ARG TAG=latest
 
 FROM ghcr.io/cdcgov/cfa-actions:${TAG}
 
-COPY Containerfile /app/.
+COPY twostep-container-build/example/Containerfile /app/.
 
 CMD ["bash"]
