@@ -18,6 +18,7 @@ jobs:
 
     permissions:
       contents: read
+      packages: write
       pull-requests: write
 
     steps:
@@ -27,9 +28,8 @@ jobs:
       - name: Two-step build
         uses: ./twostep-container-build
         with:
+          registry: ghcr.io/cdcgov/
           container-file-1: twostep-container-build/example/Containerfile.dependencies
           container-file-2: twostep-container-build/example/Containerfile
           first-step-cache-key: ${{ hashFiles('twostep-container-build/example/Containerfile.dependencies') }}
           image: cfa-actions
-          push-image1: false
-          push-image2: false
