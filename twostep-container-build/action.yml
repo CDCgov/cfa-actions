@@ -21,8 +21,9 @@ inputs:
   username:
     description: |
       The username to use for the container registry login.
+      Defaults to the GitHub actor.
     required: false
-    default: ''
+    default: ${{ github.actor }}
   password:
     description: |
       The password to use for the container registry login.
@@ -102,7 +103,7 @@ runs:
           ${{ inputs.container-file-1 }}
 
     - name: Login to the Container Registry
-      if: steps.cache.outputs.cache-hit != 'true' && inputs.username != ''
+      if: steps.cache.outputs.cache-hit != 'true' && inputs.registry != ''
       uses: docker/login-action@v3
       with:
         registry: ${{ inputs.registry }}
