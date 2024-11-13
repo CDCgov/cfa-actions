@@ -1,0 +1,5 @@
+FROM rocker/r-base:4.4.0
+
+RUN install2.r epiworldR
+
+CMD ["bash"]

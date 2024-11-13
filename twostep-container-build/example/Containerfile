@@ -1,0 +1,7 @@
+ARG TAG=latest
+
+FROM cfa-actions:${TAG}
+
+COPY Containerfile /app/.
+
+CMD ["bash"]

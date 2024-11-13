@@ -1,0 +1,36 @@
+name: Test twostep-container-build
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/test-twostep-container-build.yml'
+      - 'twostep-container-build/action.yml'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/test-twostep-container-build.yml'
+      - 'twostep-container-build/action.yml'
+
+jobs:
+  build-artifact-container:
+    runs-on: ubuntu-latest
+    container: rocker/r-base:4.4.0
+
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v4
+        name: Checkout code
+
+      - name: Two-step build
+        uses: ./twostep-container-build
+        with:
+          container-file-1: twostep-container-build/example/Containerfile.dependencies
+          container-file-2: twostep-container-build/example/Containerfile
+          first-step-cache-key: ${{ hashFiles('twostep-container-build/example/Containerfile.dependencies') }}
+          image: cfa-actions
+          push-image1: false
+          push-image2: false
