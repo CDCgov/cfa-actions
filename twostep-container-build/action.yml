@@ -30,7 +30,9 @@ inputs:
     default: ''
   registry:
     description: |
-      The registry to use for the container registry login. For example, ghcr.io., cfaprodbatchcr.azurecr.io., etc.
+      The registry to use for the container registry login
+      with trailing slash. For example, ghcr.io/,
+      cfaprodbatchcr.azurecr.io/, etc.
     required: true
   main-branch-name:
     description: |
@@ -113,7 +115,7 @@ runs:
       with:
         push: ${{ inputs.push-image1 }}
         tags: |
-          ${{ inputs.registry }}/${{ inputs.image }}-dependencies:${{ steps.image-tag.outputs.tag }}
+          ${{ inputs.registry }}${{ inputs.image }}-dependencies:${{ steps.image-tag.outputs.tag }}
         file: ${{ inputs.container-file-1 }}
 
     - name: Build and push the main image
@@ -122,7 +124,7 @@ runs:
       with:
         push: ${{ inputs.push-image2 }}
         tags: |
-          ${{ inputs.registry }}/${{ inputs.image }}:${{ steps.image-tag.outputs.tag }}
+          ${{ inputs.registry }}${{ inputs.image }}:${{ steps.image-tag.outputs.tag }}
         file: ./Dockerfile
         build-args: |
           TAG=${{ steps.image-tag.outputs.tag }}
