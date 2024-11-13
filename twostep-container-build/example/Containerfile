@@ -1,6 +1,6 @@
 ARG TAG=latest
 
-FROM cfa-actions:${TAG}
+FROM ghcr.io/cdcgov/cfa-actions:${TAG}
 
 COPY Containerfile /app/.
 

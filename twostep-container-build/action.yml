@@ -113,18 +113,20 @@ runs:
       if: steps.cache.outputs.cache-hit != 'true'
       uses: docker/build-push-action@v6
       with:
+        no-cache: true
         push: ${{ inputs.push-image-1 }}
         tags: |
-          ${{ inputs.registry }}${{ inputs.image }}-dependencies:${{ steps.image-tag.outputs.tag }}
+          ${{ inputs.registry }}${{ inputs.image }}:dependencies-${{ steps.image-tag.outputs.tag }}
         file: ${{ inputs.container-file-1 }}
 
     - name: Build and push the main image
       id: build_and_push_model_image
       uses: docker/build-push-action@v6
       with:
+        no-cache: true
         push: ${{ inputs.push-image-2 }}
         tags: |
           ${{ inputs.registry }}${{ inputs.image }}:${{ steps.image-tag.outputs.tag }}
-        file: ${{ inputs.container-file-2 }}
+        file: dependencies-${{ inputs.container-file-2 }}
         build-args: |
           TAG=${{ steps.image-tag.outputs.tag }}
