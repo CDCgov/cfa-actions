@@ -125,4 +125,4 @@ runs:
           ${{ inputs.registry }}/${{ inputs.image }}:${{ steps.image-tag.outputs.tag }}
         file: ./Dockerfile
         build-args: |
-          TAG=${{ needs.build-dependencies-image.outputs.tag }}
+          TAG=${{ steps.image-tag.outputs.tag }}
