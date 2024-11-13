@@ -103,7 +103,7 @@ runs:
           ${{ inputs.container-file-1 }}
 
     - name: Login to the Container Registry
-      if: steps.cache.outputs.cache-hit != 'true' && inputs.registry != ''
+      if: inputs.registry != ''
       uses: docker/login-action@v3
       with:
         registry: ${{ inputs.registry }}
