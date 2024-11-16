@@ -9,7 +9,7 @@
 | `message`       | Message template to be posted in the PR, as Github-flavored Markdown (GFM). Use the placeholder `{ artifact-url }` to reference the URL of the uploaded artifact, either raw or as GFM formatted link. Use the `{ artifact-name }` placeholder to include the artifact name in the message | false    | `'Thank you for your contribution ${{ github.actor }} :rocket:! Your { artifact-name } is ready for download :point_right: [here]({ artifact-url }) :point_left:!'` |
 | `python`        | The path to the Python executable. | false    | `'python'`       |
 
-This action only runs in PRs and requires the `pull-requests: write` permission. 
+This action only runs in PRs and requires the `pull-requests: write` and `actions: read` permissions. 
 
 ## Example: Post artifact created within a job
 
@@ -79,7 +79,7 @@ jobs:
 
     # Required permissions
     permissions:
-      contents: read
+      actions: read
       pull-requests: write
 
     steps:
