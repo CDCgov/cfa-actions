@@ -1,0 +1,7 @@
+ARG TAG=latest
+
+FROM ghcr.io/cdcgov/cfa-actions:${TAG}
+
+COPY twostep-container-build/examples/Containerfile /app/.
+
+CMD ["bash"]

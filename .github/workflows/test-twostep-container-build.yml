@@ -1,0 +1,38 @@
+name: Test twostep-container-build
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/test-twostep-container-build.yml'
+      - 'twostep-container-build/action.yml'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/test-twostep-container-build.yml'
+      - 'twostep-container-build/action.yml'
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v4
+        name: Checkout code
+
+      - name: Two-step build
+        uses: ./twostep-container-build
+        with:
+          registry: ghcr.io/
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          container-file-1: twostep-container-build/examples/Containerfile.dependencies
+          container-file-2: twostep-container-build/examples/Containerfile
+          first-step-cache-key: ${{ hashFiles('twostep-container-build/examples/Containerfile.dependencies') }}
+          image: cdcgov/cfa-actions

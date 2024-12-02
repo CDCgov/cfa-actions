@@ -1,0 +1,38 @@
+name: Building the container and put it on ghcr.io
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    # Since we are using ghcr.io, we need to set the permissions to write
+    # for the packages.
+    permissions:
+      contents: read
+      packages: write
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v4
+        name: Checkout code
+
+      - name: Two-step build
+        uses: ./twostep-container-build
+        with:
+          # Login information
+          registry: ghcr.io/
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          # Paths to the container files
+          container-file-1: Containerfile.dependencies
+          container-file-2: Containerfile
+          # We are using the dependency container for caching
+          first-step-cache-key: ${{ hashFiles('Containerfile.dependencies') }}
+          # The image to build includes the organization (that's how it is
+          # on ghcr.io)
+          image: cdcgov/cfa-actions
