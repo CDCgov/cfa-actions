@@ -106,13 +106,13 @@ CMD ["bash"]
 [`Containerfile`](examples/Containerfile)
 
 ```Containerfile
-ARG TAG=latest
+ARG TAG=dependencies-latest
 
-FROM ghcr.io/cdcgov/cfa-actions-dependencies:${TAG}
+FROM ghcr.io/cdcgov/cfa-actions:${TAG}
 
 COPY twostep-container-build/example/Containerfile /app/.
 
 CMD ["bash"]
 ```
 
-Notice the `TAG` argument which is passed to the second container file. During runs of the action, `TAG` takes the value of the branch name or `latest` if the branch is the main branch.
+Notice the `TAG` argument which is passed to the second container file. During runs of the action, `TAG` takes the value of the `dependencies-[branch name]` or `dependencies-latest` if the branch is the main branch.
