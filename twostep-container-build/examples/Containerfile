@@ -1,8 +1,8 @@
 ARG TAG=latest
-ARG SHA=undefined
+ARG GH_SHA=undefined
 
 FROM ghcr.io/cdcgov/cfa-actions:${TAG}
 
-LABEL SHA=${SHA}
+LABEL GH_SHA=${GH_SHA}
 COPY twostep-container-build/examples/Containerfile /app/.
 CMD ["bash"]

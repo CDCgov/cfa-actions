@@ -39,10 +39,6 @@ jobs:
           image: cdcgov/cfa-actions
 
       # Testing passing arguments
-      - name: Removing the image
-        run: |
-          docker rm ghcr.io/cdcgov/cfa-actions:${{ steps.twostep-1.outputs.tag }}
-
       - name: Two-step build with args
         id: twostep-2
         uses: ./twostep-container-build
