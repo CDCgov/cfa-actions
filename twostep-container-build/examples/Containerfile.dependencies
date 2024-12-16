@@ -1,5 +1,5 @@
 FROM rocker/r-base:4.4.0
 
-RUN installGithub.r USCbiostats/slurmR@df891c4
+RUN install2.r slurmR
 
 CMD ["bash"]
