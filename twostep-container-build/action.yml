@@ -1,5 +1,11 @@
 name: twostep-container-build
 description: |
+  This action builds a container image in two steps. The first step
+  is used to build the dependencies, and the second step is used to
+  build the main image. The first step is cached to speed up the
+  process. The action is useful when the dependencies are not
+  expected to change often, and the main image is expected to change
+  frequently.
   
 inputs:
   container-file-1:
@@ -52,6 +58,24 @@ inputs:
       Whether to push the second image. For instance, true.
     required: false
     default: 'true'
+  build-args-1:
+    description: |
+      The build arguments to use for the first image.
+    required: false
+  build-args-2:
+    description: |
+      The build arguments to use for the second image.
+    required: false
+outputs:
+  tag:
+    description: |
+      The tag to used for the image.
+    value: ${{ steps.image-tag.outputs.tag }}
+  branch:
+    description: |
+      The branch name.
+    value: ${{ steps.branch-name.outputs.branch }}
+
 runs:
   using: 'composite'
 
@@ -116,6 +140,8 @@ runs:
         tags: |
           ${{ inputs.registry }}${{ inputs.image }}:dependencies-${{ steps.image-tag.outputs.tag }}
         file: ${{ inputs.container-file-1 }}
+        build-args: ${{ inputs.build-args-1 }}
+
 
     - name: Build and push the main image
       id: build_and_push_model_image
@@ -127,4 +153,5 @@ runs:
           ${{ inputs.registry }}${{ inputs.image }}:${{ steps.image-tag.outputs.tag }}
         file: ${{ inputs.container-file-2 }}
         build-args: |
+          ${{ inputs.build-args-2 }}
           TAG=dependencies-${{ steps.image-tag.outputs.tag }}
