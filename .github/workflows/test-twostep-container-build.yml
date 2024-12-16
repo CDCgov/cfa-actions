@@ -47,6 +47,8 @@ jobs:
       pull-requests: write
 
     steps:
+      - uses: actions/checkout@v4
+        name: Checkout code
 
       # Testing passing arguments
       - name: Two-step build with args
