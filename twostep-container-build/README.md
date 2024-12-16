@@ -38,7 +38,7 @@ The action has the following outputs:
 
 | Field | Description |
 |-------|-------------|
-| `image-tag` | Tag of the built image |
+| `tag` | Container tag of the built image |
 | `branch` | Branch name |
 
 

@@ -67,7 +67,7 @@ inputs:
       The build arguments to use for the second image.
     required: false
 outputs:
-  image-tag:
+  tag:
     description: |
       The tag to used for the image.
     value: ${{ steps.image-tag.outputs.tag }}
