@@ -11,7 +11,7 @@ flowchart LR
 
 Caching is done using the [actions/cache](https://github.com/actions/cache/tree/v4) (lookup only) and [docker/build-push-action@v6](https://github.com/docker/build-push-action/tree/v6) actions. Users have to explicitly provide the cache key for the first step. For example, if you are dealing with an R package, you can cache the dependencies by passing the key `${{ hashFiles('DESCRIPTION') }}` to the `first-step-cache-key` input. That way, the first step will only be executed if the dependencies change.
 
-## Inputs
+## Inputs and Outputs
 
 | Field | Description | Required | Default |
 |-------|-------------|----------|---------|
@@ -33,6 +33,13 @@ The following are arguments passed to the [docker/build-push-action@v6](https://
 | `push-image-2` | Push the image created during the second step | false | `false` |
 | `build-args-1` | Build arguments for the first step | false | |
 | `build-args-2` | Build arguments for the second step | false | |
+
+The action has the following outputs:
+
+| Field | Description |
+|-------|-------------|
+| `image-tag` | Tag of the built image |
+| `branch` | Branch name |
 
 
 ## Example: Using ghcr.io

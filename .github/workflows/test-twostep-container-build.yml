@@ -39,6 +39,7 @@ jobs:
 
       # Testing passing arguments
       - name: Two-step build
+        id: twostep-2
         uses: ./twostep-container-build
         with:
           registry: ghcr.io/
@@ -55,6 +56,6 @@ jobs:
 
       - name: Listing the labels from the image
         run: |
-          docker inspect ghcr.io/cdcgov/cfa-actions:latest \
+          docker inspect ghcr.io/cdcgov/cfa-actions:${{ steps.twostep-2.outputs.tag }} \
             --format='{{json .Config.Labels}}' | jq .
         
