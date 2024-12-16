@@ -108,7 +108,7 @@ CMD ["bash"]
 ```Containerfile
 ARG TAG=latest
 
-FROM ghcr.io/cdcgov/cfa-actions:${TAG}
+FROM ghcr.io/cdcgov/cfa-actions-dependencies:${TAG}
 
 COPY twostep-container-build/example/Containerfile /app/.
 
