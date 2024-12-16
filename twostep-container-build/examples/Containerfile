@@ -1,8 +1,8 @@
 ARG TAG=dependencies-latest
-ARG GH_SHA=undefined
+ARG WHO=undefined
 
 FROM ghcr.io/cdcgov/cfa-actions:${TAG}
 
-LABEL GH_SHA="${GH_SHA}"
+LABEL WHO="${WHO}"
 COPY twostep-container-build/examples/Containerfile /app/.
 CMD ["bash"]

@@ -63,7 +63,7 @@ jobs:
           first-step-cache-key: ${{ hashFiles('twostep-container-build/examples/Containerfile.dependencies') }}
           image: cdcgov/cfa-actions-with-args
           build-args-2: |
-            GH_SHA=${{ github.sha }}
+            WHO=${{ github.actor }}
           push-image-1: false
           push-image-2: false
 
