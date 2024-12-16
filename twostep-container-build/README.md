@@ -9,7 +9,7 @@ flowchart LR
   Containerfile2-->|Generates|Image2
 ```
 
-Caching is done using the [actions/cache](https://github.com/actions/cache/tree/v4) (lookup only) and [docker/build-push-action](https://github.com/docker/build-push-action) actions. Users have to explicitly provide the cache key for the first step. For example, if you are dealing with an R package, you can cache the dependencies by passing the key `${{ hashFiles('DESCRIPTION') }}` to the `first-step-cache-key` input. That way, the first step will only be executed if the dependencies change.
+Caching is done using the [actions/cache](https://github.com/actions/cache/tree/v4) (lookup only) and [docker/build-push-action@v6](https://github.com/docker/build-push-action/tree/v6) actions. Users have to explicitly provide the cache key for the first step. For example, if you are dealing with an R package, you can cache the dependencies by passing the key `${{ hashFiles('DESCRIPTION') }}` to the `first-step-cache-key` input. That way, the first step will only be executed if the dependencies change.
 
 ## Inputs
 
@@ -25,7 +25,7 @@ Caching is done using the [actions/cache](https://github.com/actions/cache/tree/
 | `main-branch-name` | Name of the main branch | false | `'main'` |
 | `main-branch-tag` | Tag to use for the main branch | false | `'latest'` |
 
-The following are arguments passed to the [docker/build-push-action](https://github.com/docker/build-push-action) action.
+The following are arguments passed to the [docker/build-push-action@v6](https://github.com/docker/build-push-action/tree/v6) action.
 
 | Field | Description | Required | Default |
 |-------|-------------|----------|---------|
@@ -33,8 +33,6 @@ The following are arguments passed to the [docker/build-push-action](https://git
 | `push-image-2` | Push the image created during the second step | false | `false` |
 | `build-args-1` | Build arguments for the first step | false | |
 | `build-args-2` | Build arguments for the second step | false | |
-| `docker-login-action` | Version of the [docker/login-action](https://github.com/docker/login-action) to use | false | `'v3'` |
-| `docker-build-push-action` | Version of the [docker/build-push-action](https://github.com/docker/build-push-action) to use | false | `'v6'` |
 
 
 ## Example: Using ghcr.io
