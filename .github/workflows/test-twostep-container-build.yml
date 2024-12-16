@@ -61,7 +61,7 @@ jobs:
           container-file-1: twostep-container-build/examples/Containerfile.dependencies
           container-file-2: twostep-container-build/examples/Containerfile
           first-step-cache-key: ${{ hashFiles('twostep-container-build/examples/Containerfile.dependencies') }}
-          image: cdcgov/cfa-actions
+          image: cdcgov/cfa-actions-with-args
           build-args-2: |
             GH_SHA=${{ github.sha }}
           push-image-1: false
@@ -69,6 +69,6 @@ jobs:
 
       - name: Listing the labels from the image
         run: |
-          docker inspect ghcr.io/cdcgov/cfa-actions:${{ steps.twostep-2.outputs.tag }} \
+          docker inspect ghcr.io/cdcgov/cfa-actions-with-args:${{ steps.twostep-2.outputs.tag }} \
             --format='{{json .Config.Labels}}' | jq .
         
