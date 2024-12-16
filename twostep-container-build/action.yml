@@ -52,6 +52,24 @@ inputs:
       Whether to push the second image. For instance, true.
     required: false
     default: 'true'
+  build-args-1:
+    description: |
+      The build arguments to use for the first image.
+    required: false
+  build-args-2:
+    description: |
+      The build arguments to use for the second image.
+    required: false
+  docker-login-action-version:
+    description: |
+      The version of the docker/login-action to use.
+    required: false
+    default: 'v3'
+  docker-build-push-action-version:
+    description: |
+      The version of the docker/build-push-action to use.
+    required: false
+    default: 'v6'
 runs:
   using: 'composite'
 
@@ -101,7 +119,7 @@ runs:
 
     - name: Login to the Container Registry
       if: inputs.registry != ''
-      uses: docker/login-action@v3
+      uses: docker/login-action@${{ inputs.docker-login-action-version }}
       with:
         registry: ${{ inputs.registry }}
         username: ${{ inputs.username }}
@@ -109,17 +127,19 @@ runs:
 
     - name: Build and push
       if: steps.cache.outputs.cache-hit != 'true'
-      uses: docker/build-push-action@v6
+      uses: docker/build-push-action@${{ inputs.docker-build-push-action-version }}
       with:
         no-cache: true
         push: ${{ inputs.push-image-1 }}
         tags: |
           ${{ inputs.registry }}${{ inputs.image }}:dependencies-${{ steps.image-tag.outputs.tag }}
         file: ${{ inputs.container-file-1 }}
+        build-args: ${{ inputs.build-args-1 }}
+
 
     - name: Build and push the main image
       id: build_and_push_model_image
-      uses: docker/build-push-action@v6
+      uses: docker/build-push-action@${{ inputs.docker-build-push-action-version }}
       with:
         no-cache: true
         push: ${{ inputs.push-image-2 }}
@@ -127,4 +147,5 @@ runs:
           ${{ inputs.registry }}${{ inputs.image }}:${{ steps.image-tag.outputs.tag }}
         file: ${{ inputs.container-file-2 }}
         build-args: |
+          ${{ inputs.build-args-2 }}
           TAG=dependencies-${{ steps.image-tag.outputs.tag }}

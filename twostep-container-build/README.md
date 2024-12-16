@@ -24,8 +24,18 @@ Caching is done using the [actions/cache](https://github.com/actions/cache/tree/
 | `registry` | Registry to push the image to | true |  |
 | `main-branch-name` | Name of the main branch | false | `'main'` |
 | `main-branch-tag` | Tag to use for the main branch | false | `'latest'` |
+
+The following are arguments passed to the [docker/build-push-action](https://github.com/docker/build-push-action) action.
+
+| Field | Description | Required | Default |
+|-------|-------------|----------|---------|
 | `push-image-1` | Push the image created during the first step | false | `false` |
 | `push-image-2` | Push the image created during the second step | false | `false` |
+| `build-args-1` | Build arguments for the first step | false | |
+| `build-args-2` | Build arguments for the second step | false | |
+| `docker-login-action` | Version of the [docker/login-action](https://github.com/docker/login-action) to use | false | `'v3'` |
+| `docker-build-push-action` | Version of the [docker/build-push-action](https://github.com/docker/build-push-action) to use | false | `'v6'` |
+
 
 ## Example: Using ghcr.io
 
@@ -56,7 +66,7 @@ jobs:
         name: Checkout code
 
       - name: Two-step build
-        uses: ./twostep-container-build@v1.0.1
+        uses: CDCgov/cfa-actions/twostep-container-build@v1.0.1
         with:
           # Login information
           registry: ghcr.io/

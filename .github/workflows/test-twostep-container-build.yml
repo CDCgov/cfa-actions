@@ -36,3 +36,26 @@ jobs:
           container-file-2: twostep-container-build/examples/Containerfile
           first-step-cache-key: ${{ hashFiles('twostep-container-build/examples/Containerfile.dependencies') }}
           image: cdcgov/cfa-actions
+
+      # Testing passing arguments
+      - name: Two-step build
+        uses: ./twostep-container-build
+        with:
+          registry: ghcr.io/
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          container-file-1: twostep-container-build/examples/Containerfile.dependencies
+          container-file-2: twostep-container-build/examples/Containerfile
+          first-step-cache-key: ${{ hashFiles('twostep-container-build/examples/Containerfile.dependencies') }}
+          image: cdcgov/cfa-actions
+          build-args-1: |
+            SHA=${{ github.sha }}
+          push-image-1: false
+          push-image-2: false
+
+      - name: Listing the labels from the image
+        run: |
+          docker pull ghcr.io/cdcgov/cfa-actions:latest
+          docker inspect ghcr.io/cdcgov/cfa-actions:latest \
+            --format='{{json .Config.Labels}}' | jq .
+        
