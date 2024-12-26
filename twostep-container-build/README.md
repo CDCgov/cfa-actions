@@ -9,9 +9,9 @@ flowchart LR
   Containerfile2-->|Generates|Image2
 ```
 
-Caching is done using the [actions/cache](https://github.com/actions/cache/tree/v4) (lookup only) and [docker/build-push-action](https://github.com/docker/build-push-action) actions. Users have to explicitly provide the cache key for the first step. For example, if you are dealing with an R package, you can cache the dependencies by passing the key `${{ hashFiles('DESCRIPTION') }}` to the `first-step-cache-key` input. That way, the first step will only be executed if the dependencies change.
+Caching is done using the [actions/cache](https://github.com/actions/cache/tree/v4) (lookup only) and [docker/build-push-action@v6](https://github.com/docker/build-push-action/tree/v6) actions. Users have to explicitly provide the cache key for the first step. For example, if you are dealing with an R package, you can cache the dependencies by passing the key `${{ hashFiles('DESCRIPTION') }}` to the `first-step-cache-key` input. That way, the first step will only be executed if the dependencies change.
 
-## Inputs
+## Inputs and Outputs
 
 | Field | Description | Required | Default |
 |-------|-------------|----------|---------|
@@ -24,8 +24,23 @@ Caching is done using the [actions/cache](https://github.com/actions/cache/tree/
 | `registry` | Registry to push the image to | true |  |
 | `main-branch-name` | Name of the main branch | false | `'main'` |
 | `main-branch-tag` | Tag to use for the main branch | false | `'latest'` |
+
+The following are arguments passed to the [docker/build-push-action@v6](https://github.com/docker/build-push-action/tree/v6) action.
+
+| Field | Description | Required | Default |
+|-------|-------------|----------|---------|
 | `push-image-1` | Push the image created during the first step | false | `false` |
 | `push-image-2` | Push the image created during the second step | false | `false` |
+| `build-args-1` | Build arguments for the first step | false | |
+| `build-args-2` | Build arguments for the second step | false | |
+
+The action has the following outputs:
+
+| Field | Description |
+|-------|-------------|
+| `tag` | Container tag of the built image |
+| `branch` | Branch name |
+
 
 ## Example: Using ghcr.io
 
@@ -56,7 +71,7 @@ jobs:
         name: Checkout code
 
       - name: Two-step build
-        uses: ./twostep-container-build@v1.0.1
+        uses: CDCgov/cfa-actions/twostep-container-build@v1.0.1
         with:
           # Login information
           registry: ghcr.io/
@@ -91,7 +106,7 @@ CMD ["bash"]
 [`Containerfile`](examples/Containerfile)
 
 ```Containerfile
-ARG TAG=latest
+ARG TAG=dependencies-latest
 
 FROM ghcr.io/cdcgov/cfa-actions:${TAG}
 
@@ -100,4 +115,4 @@ COPY twostep-container-build/example/Containerfile /app/.
 CMD ["bash"]
 ```
 
-Notice the `TAG` argument which is passed to the second container file. During runs of the action, `TAG` takes the value of the branch name or `latest` if the branch is the main branch.
+Notice the `TAG` argument which is passed to the second container file. During runs of the action, `TAG` takes the value of the `dependencies-[branch name]` or `dependencies-latest` if the branch is the main branch.

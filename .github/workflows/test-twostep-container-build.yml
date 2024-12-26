@@ -14,7 +14,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
+  test-no-args:
     runs-on: ubuntu-latest
 
     permissions:
@@ -28,6 +28,7 @@ jobs:
 
       - name: Two-step build
         uses: ./twostep-container-build
+        id: twostep-1
         with:
           registry: ghcr.io/
           username: ${{ github.actor }}
@@ -36,3 +37,38 @@ jobs:
           container-file-2: twostep-container-build/examples/Containerfile
           first-step-cache-key: ${{ hashFiles('twostep-container-build/examples/Containerfile.dependencies') }}
           image: cdcgov/cfa-actions
+
+  test-with-args:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v4
+        name: Checkout code
+
+      # Testing passing arguments
+      - name: Two-step build with args
+        id: twostep-2
+        uses: ./twostep-container-build
+        with:
+          registry: ghcr.io/
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          container-file-1: twostep-container-build/examples/Containerfile.dependencies
+          container-file-2: twostep-container-build/examples/Containerfile
+          first-step-cache-key: ${{ hashFiles('twostep-container-build/examples/Containerfile.dependencies') }}
+          image: cdcgov/cfa-actions-with-args
+          build-args-2: |
+            GH_SHA=${{ github.sha }}
+          push-image-1: false
+          push-image-2: false
+
+      - name: Listing the labels from the image
+        run: |
+          docker inspect ghcr.io/cdcgov/cfa-actions-with-args:${{ steps.twostep-2.outputs.tag }} \
+            --format='{{json .Config.Labels}}' | jq .
+        
