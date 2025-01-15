@@ -144,7 +144,7 @@ runs:
         fi
     
     - name: Checking if matches cache
-      if: steps.pull-image.image-found == 'true'
+      if: steps.pull-image.outputs.image-found == 'true'
       id: cache
       shell: bash
       run: |
