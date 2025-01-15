@@ -70,7 +70,7 @@ jobs:
 
       - name: Check the output
         run: |
-          if [ "${{ steps.twostep-1.outputs.summary }}" != "cached" ]; then
+          if [ "${{ steps.twostep-1.outputs.summary }}" == "cached" ]; then
             echo "Using the cached version (OK)"
           else
             echo "This was supposed to use the cache version"
@@ -116,8 +116,8 @@ jobs:
 
       - name: Check the output
         run: |
-          if [ "${{ steps.twostep-2.outputs.summary }}" != "cached" ]; then
-            echo "Using the cached version (OK)"
+          if [ "${{ steps.twostep-2.outputs.summary }}" == "re-built" ]; then
+            echo "Using a re-built version (OK)"
           else
             echo "This was supposed to use the cache version"
             exit 1
