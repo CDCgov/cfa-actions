@@ -119,15 +119,6 @@ runs:
           echo "tag=${{ steps.branch-name.outputs.branch }}" >> $GITHUB_OUTPUT
         fi
 
-    - name: Check cache for base image
-      uses: actions/cache@v4
-      id: cache
-      with:
-        key: ${{ inputs.first-step-cache-key }}
-        lookup-only: true
-        path:
-          ${{ inputs.container-file-1 }}
-
     - name: Login to the Container Registry
       if: inputs.registry != ''
       uses: docker/login-action@v3
@@ -136,13 +127,25 @@ runs:
         username: ${{ inputs.username }}
         password: ${{ inputs.password }}
 
-    - name: Pulling the image
-      if: steps.cache.outputs.cache-hit == 'true'
+    - name: Checking if the image exists
       id: pull-image
       shell: bash
       run: |
         # Ensuring we can pull the image, if cache exists
-        docker pull ${{ inputs.registry }}${{ inputs.image }}:dependencies-${{ steps.image-tag.outputs.tag }}
+        docker pull ${{ inputs.registry }}${{ inputs.image }}:dependencies-${{ steps.image-tag.outputs.tag }} || \
+          export IMAGE_NOT_FOUND=tue
+
+        if [ -n "$IMAGE_NOT_FOUND" ]; then
+          echo "image-found=false" >> $GITHUB_OUTPUT
+        else
+          echo "image-found=true" >> $GITHUB_OUTPUT
+        fi
+    
+    - name: Checking if matches cache
+      if: steps.pull-image.image-found == 'true'
+      id: cache
+      shell: bash
+      run: |
 
         # Inspecting the image
         docker inspect \
@@ -156,10 +159,10 @@ runs:
           echo "https://github.com/CDCgov/cfa-actions/issues/10."
           
           echo "Rebuilding the image..."
-          echo "image-found=false" >> $GITHUB_OUTPUT
+          echo "cache-hit=false" >> $GITHUB_OUTPUT
         else
           echo "Cache hash matches (all good!)."
-          echo "image-found=true" >> $GITHUB_OUTPUT
+          echo "cache-hit=true" >> $GITHUB_OUTPUT
         fi
 
     - name: Build and push
