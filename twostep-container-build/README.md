@@ -9,7 +9,7 @@ flowchart LR
   Containerfile2-->|Generates|Image2
 ```
 
-Caching is done by storing the cache-key as a label in the image; and the build and push process is done using the [docker/build-push-action@v6](https://github.com/docker/build-push-action/tree/v6) action. Users have to explicitly provide the cache key for the first step. For example, if you are dealing with an R package, you can cache the dependencies by passing the key `${{ hashFiles('DESCRIPTION') }}` to the `first-step-cache-key` input. That way, the first step will only be executed if the dependencies change.
+Caching is done by storing the cache-key as a label in the image (`TWO_STEP_BUILD_CACHE_KEY`); and the build and push process is done using the [docker/build-push-action@v6](https://github.com/docker/build-push-action/tree/v6) action. Users have to explicitly provide the cache key for the first step. For example, if you are dealing with an R package, you can cache the dependencies by passing the key `${{ hashFiles('DESCRIPTION') }}` to the `first-step-cache-key` input. That way, the first step will only be executed if the dependencies change.
 
 ## Inputs and Outputs
 
@@ -42,6 +42,7 @@ The action has the following outputs:
 |-------|-------------|
 | `tag` | Container tag of the built image |
 | `branch` | Branch name |
+| `summary` | A summary of the action: (`built`, `re-built`, or `cached`) |
 
 
 ## Example: Using ghcr.io

@@ -83,6 +83,10 @@ outputs:
     description: |
       The branch name.
     value: ${{ steps.branch-name.outputs.branch }}
+  summary:
+    description: |
+      The result of the build.
+    value: ${{ steps.final.outputs.result }}
 
 runs:
   using: 'composite'
@@ -152,7 +156,7 @@ runs:
         # Inspecting the image
         docker inspect \
           ${{ inputs.registry }}${{ inputs.image }}:dependencies-${{ steps.image-tag.outputs.tag }} \
-          --format='{{ index .Config.Labels "TWO_STEP_BUILD_CACHE_HASH" }}' > \
+          --format='{{ index .Config.Labels "TWO_STEP_BUILD_CACHE_KEY" }}' > \
           ${{ github.sha }}_cache_hash
         
         if [ "$(cat ${{ github.sha }}_cache_hash)" != "${{ inputs.first-step-cache-key }}" ]; then
@@ -175,7 +179,7 @@ runs:
         build-args: ${{ inputs.build-args-1 }}
         labels: |
           ${{ inputs.build-labels-1 }}
-          TWO_STEP_BUILD_CACHE_HASH=${{ inputs.first-step-cache-key }}
+          TWO_STEP_BUILD_CACHE_KEY=${{ inputs.first-step-cache-key }}
 
 
     - name: Build and push the main image
@@ -192,4 +196,20 @@ runs:
           TAG=dependencies-${{ steps.image-tag.outputs.tag }}
         labels: |
           ${{ inputs.build-labels-2 }}
-          TWO_STEP_BUILD_CACHE_HASH=${{ inputs.first-step-cache-key }}
+          TWO_STEP_BUILD_CACHE_KEY=${{ inputs.first-step-cache-key }}
+
+    - name: Set the final result
+      id: final
+      shell: bash
+      run: |
+        # Three possible cases:
+        # - The image did not exist, so we built it
+        # - The image existed, but the cache did not match, so we rebuilt it
+        # - The image existed, and the cache matched, so we did not rebuild it
+        if [ "${{ steps.cache.outputs.cache-hit }}" == "" ]; then
+          echo "result=built" >> $GITHUB_OUTPUT
+        else if [ "${{ steps.cache.outputs.cache-hit }}" == "false" ]; then
+          echo "result=rebuilt" >> $GITHUB_OUTPUT
+        else
+          echo "result=cached" >> $GITHUB_OUTPUT
+        fi
