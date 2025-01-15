@@ -35,7 +35,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
           container-file-1: twostep-container-build/examples/Containerfile.dependencies
           container-file-2: twostep-container-build/examples/Containerfile
-          first-step-cache-key: ${{ hashFiles('twostep-container-build/examples/Containerfile.dependencies') }}
+          first-step-cache-key: no-args-${{ hashFiles('twostep-container-build/examples/Containerfile.dependencies') }}
           image: cdcgov/cfa-actions
 
   test-with-args:
@@ -60,7 +60,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
           container-file-1: twostep-container-build/examples/Containerfile.dependencies
           container-file-2: twostep-container-build/examples/Containerfile
-          first-step-cache-key: ${{ hashFiles('twostep-container-build/examples/Containerfile.dependencies') }}
+          first-step-cache-key: with-args-${{ hashFiles('twostep-container-build/examples/Containerfile.dependencies') }}
           image: cdcgov/cfa-actions-with-args
           build-args-2: |
             GH_SHA=${{ github.sha }}
