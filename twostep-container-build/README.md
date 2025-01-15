@@ -33,6 +33,8 @@ The following are arguments passed to the [docker/build-push-action@v6](https://
 | `push-image-2` | Push the image created during the second step | false | `false` |
 | `build-args-1` | Build arguments for the first step | false | |
 | `build-args-2` | Build arguments for the second step | false | |
+| `labels-1` | Labels for the first step | false | |
+| `labels-2` | Labels for the second step | false | |
 
 The action has the following outputs:
 

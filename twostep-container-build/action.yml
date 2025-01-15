@@ -66,6 +66,14 @@ inputs:
     description: |
       The build arguments to use for the second image.
     required: false
+  build-labels-1:
+    description: |
+      The labels to use for the first image.
+    required: false
+  build-labels-2:
+    description: |
+      The labels to use for the second image.
+    required: false
 outputs:
   tag:
     description: |
@@ -80,16 +88,6 @@ runs:
   using: 'composite'
 
   steps:
-
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        ref: ${{ github.event.pull_request.head.sha }}
-
-    - name: Getting the commit message
-      id: commit-message
-      run: echo "message=$(git log -1 --pretty=%s HEAD)" >> $GITHUB_OUTPUT
-      shell: bash
 
     - name: Checking out the latest (may be merge if PR)
       uses: actions/checkout@v4
@@ -141,6 +139,9 @@ runs:
           ${{ inputs.registry }}${{ inputs.image }}:dependencies-${{ steps.image-tag.outputs.tag }}
         file: ${{ inputs.container-file-1 }}
         build-args: ${{ inputs.build-args-1 }}
+        labels: |
+          ${{ inputs.build-labels-1 }}
+          TWO_STEP_BUILD_CACHE_HASH=${{ inputs.first-step-cache-key }}
 
 
     - name: Build and push the main image
@@ -155,3 +156,6 @@ runs:
         build-args: |
           ${{ inputs.build-args-2 }}
           TAG=dependencies-${{ steps.image-tag.outputs.tag }}
+        labels: |
+          ${{ inputs.build-labels-2 }}
+          TWO_STEP_BUILD_CACHE_HASH=${{ inputs.first-step-cache-key }}
