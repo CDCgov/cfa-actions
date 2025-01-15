@@ -68,6 +68,15 @@ jobs:
           push-image-1: false
           push-image-2: false
 
+      - name: Check the output
+        run: |
+          if [ "${{ steps.twostep-1.outputs.summary }}" != "cached" ]; then
+            echo "Using the cached version (OK)"
+          else
+            echo "This was supposed to use the cache version"
+            exit 1
+          fi
+
   # This job is used to test the action with arguments.
   # Caching should also be triggered here.
   test-with-args:
@@ -104,4 +113,13 @@ jobs:
         run: |
           docker inspect ghcr.io/cdcgov/cfa-actions-with-args:${{ steps.twostep-2.outputs.tag }} \
             --format='{{json .Config.Labels}}' | jq .
-        
+
+      - name: Check the output
+        run: |
+          if [ "${{ steps.twostep-2.outputs.summary }}" != "cached" ]; then
+            echo "Using the cached version (OK)"
+          else
+            echo "This was supposed to use the cache version"
+            exit 1
+          fi
+    

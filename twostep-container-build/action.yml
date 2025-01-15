@@ -208,7 +208,7 @@ runs:
         # - The image existed, and the cache matched, so we did not rebuild it
         if [ "${{ steps.cache.outputs.cache-hit }}" == "" ]; then
           echo "result=built" >> $GITHUB_OUTPUT
-        else if [ "${{ steps.cache.outputs.cache-hit }}" == "false" ]; then
+        elif [ "${{ steps.cache.outputs.cache-hit }}" == "false" ]; then
           echo "result=rebuilt" >> $GITHUB_OUTPUT
         else
           echo "result=cached" >> $GITHUB_OUTPUT
