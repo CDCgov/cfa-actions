@@ -148,6 +148,24 @@ runs:
           ${{ inputs.build-labels-1 }}
           TWO_STEP_BUILD_CACHE_HASH=${{ inputs.first-step-cache-key }}
 
+    - name: Pulling the image
+      if: steps.cache.outputs.cache-hit == 'true'
+      shell: bash
+      run: |
+        # Ensuring we can pull the image, if cache exists
+        docker pull ${{ inputs.registry }}${{ inputs.image }}:dependencies-${{ steps.image-tag.outputs.tag }}
+
+        # Inspecting the image
+        docker inspect \
+          ${{ inputs.registry }}${{ inputs.image }}:dependencies-${{ steps.image-tag.outputs.tag }} \
+          --format='{{ index .Config.Labels "TWO_STEP_BUILD_CACHE_HASH" }}' > \
+          ${{ github.sha }}_cache_hash
+        
+        if [ "$(cat ${{ github.sha }}_cache_hash)" != "${{ inputs.first-step-cache-key }}" ]; then
+          echo "Cache hash does not match."
+          exit 1
+        fi
+
 
     - name: Build and push the main image
       id: build_and_push_model_image

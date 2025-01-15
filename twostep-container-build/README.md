@@ -73,7 +73,7 @@ jobs:
         name: Checkout code
 
       - name: Two-step build
-        uses: CDCgov/cfa-actions/twostep-container-build@v1.1.0
+        uses: CDCgov/cfa-actions/twostep-container-build@v1.2.0
         with:
           # Login information
           registry: ghcr.io/
