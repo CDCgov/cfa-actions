@@ -134,22 +134,9 @@ runs:
         username: ${{ inputs.username }}
         password: ${{ inputs.password }}
 
-    - name: Build and push
-      if: steps.cache.outputs.cache-hit != 'true'
-      uses: docker/build-push-action@v6
-      with:
-        no-cache: true
-        push: ${{ inputs.push-image-1 }}
-        tags: |
-          ${{ inputs.registry }}${{ inputs.image }}:dependencies-${{ steps.image-tag.outputs.tag }}
-        file: ${{ inputs.container-file-1 }}
-        build-args: ${{ inputs.build-args-1 }}
-        labels: |
-          ${{ inputs.build-labels-1 }}
-          TWO_STEP_BUILD_CACHE_HASH=${{ inputs.first-step-cache-key }}
-
     - name: Pulling the image
       if: steps.cache.outputs.cache-hit == 'true'
+      id: pull-image
       shell: bash
       run: |
         # Ensuring we can pull the image, if cache exists
@@ -162,9 +149,30 @@ runs:
           ${{ github.sha }}_cache_hash
         
         if [ "$(cat ${{ github.sha }}_cache_hash)" != "${{ inputs.first-step-cache-key }}" ]; then
-          echo "Cache hash does not match."
-          exit 1
+          echo "Cache hash does not match: Please report this to the "
+          echo "ongoing issue at "
+          echo "https://github.com/CDCgov/cfa-actions/issues/10."
+          
+          echo "Rebuilding the image..."
+          echo "image-found=false" >> $GITHUB_OUTPUT
+        else
+          echo "Cache hash matches (all good!)."
+          echo "image-found=true" >> $GITHUB_OUTPUT
         fi
+
+    - name: Build and push
+      if: steps.cache.outputs.cache-hit != 'true' || steps.pull-image.outputs.image-found != 'true'
+      uses: docker/build-push-action@v6
+      with:
+        no-cache: true
+        push: ${{ inputs.push-image-1 }}
+        tags: |
+          ${{ inputs.registry }}${{ inputs.image }}:dependencies-${{ steps.image-tag.outputs.tag }}
+        file: ${{ inputs.container-file-1 }}
+        build-args: ${{ inputs.build-args-1 }}
+        labels: |
+          ${{ inputs.build-labels-1 }}
+          TWO_STEP_BUILD_CACHE_HASH=${{ inputs.first-step-cache-key }}
 
 
     - name: Build and push the main image
