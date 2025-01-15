@@ -42,11 +42,19 @@ jobs:
                 echo "run_number          : ${{ github.run_number }}"
                 echo "run_attempt         : ${{ github.run_attempt }}"
                 echo "secret_source       : ${{ github.secret_source }}"
+                echo "server_url          : ${{ github.server_url }}"
+                echo "sha                 : ${{ github.sha }}"
+                echo "token               : ${{ github.token }}"
+                echo "triggering_actor    : ${{ github.triggering_actor }}"
+                echo "workflow            : ${{ github.workflow }}"
+                echo "workflow_ref        : ${{ github.workflow_ref }}"
+                echo "workflow_sha        : ${{ github.workflow_sha }}"
+                echo "workspace           : ${{ github.workspace }}"
             
             - name: Dumping the context using json
               run: |
-                echo "${{ toJson(github) }}" > $GITHUB_CONTEXT
-                cat $GITHUB_CONTEXT
+                echo "${{ toJson(github) }}" > temp.json
+                cat temp.json
 
 
 
