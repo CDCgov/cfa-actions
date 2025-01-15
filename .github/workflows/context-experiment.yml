@@ -53,8 +53,7 @@ jobs:
             
             - name: Dumping the context using json
               run: |
-                echo "${{ toJson(github) }}" > temp.json
-                cat temp.json
+                echo "${{ toJson(github) }}"
 
 
 

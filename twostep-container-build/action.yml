@@ -89,6 +89,11 @@ runs:
 
   steps:
 
+    - name: Dumping github context information
+      shell: bash
+      run: |
+        echo "${{ toJson(github) }}" || echo "Failed to dump context info"
+
     - name: Checking out the latest (may be merge if PR)
       uses: actions/checkout@v4
 

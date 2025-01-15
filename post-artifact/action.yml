@@ -33,6 +33,11 @@ runs:
 
   steps:
 
+    - name: Dumping github context information
+      shell: bash
+      run: |
+        echo "${{ toJson(github) }}" || echo "Failed to dump context info"
+
     - name: Check this is a PR
       if: ${{ github.event_name != 'pull_request' }}
       run: 
