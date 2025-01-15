@@ -43,6 +43,7 @@ jobs:
   # to ensure that caching is working as expected.
   test-no-args-rerun:
     runs-on: ubuntu-latest
+    needs: test-no-args
 
     permissions:
       contents: read
