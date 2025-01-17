@@ -124,12 +124,18 @@ CMD ["bash"]
 [`Containerfile`](examples/Containerfile)
 
 ```Containerfile
+# Collection of ARGs
 ARG TAG=dependencies-latest
+ARG IMAGE=ghcr.io/cdcgov/cfa-actions
+ARG GH_SHA=default_var
 
-FROM ghcr.io/cdcgov/cfa-actions:${TAG}
+FROM ${IMAGE}:${TAG}
 
-COPY twostep-container-build/example/Containerfile /app/.
+# Re-declaring the ARGs here is necessary to use them in the LABEL
+ARG GH_SHA
+LABEL GH_SHA=${GH_SHA}
 
+COPY . /app/.
 CMD ["bash"]
 ```
 
