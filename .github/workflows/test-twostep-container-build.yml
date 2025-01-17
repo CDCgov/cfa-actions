@@ -111,8 +111,13 @@ jobs:
 
       - name: Listing the labels from the image
         run: |
-          docker inspect ghcr.io/cdcgov/cfa-actions-with-args:${{ steps.twostep-2.outputs.tag }} \
-            --format='{{json .Config.Labels}}' | jq .
+          docker inspect ghcr.io/cdcgov/cfa-actions:${{ steps.twostep-2.outputs.tag }} \
+            --format='{{ index .Config.Labels "GH_SHA" }}' > _${{ github.sha }}_labels.json
+
+          if [ "$(cat _${{ github.sha }}_labels.json)" != "${{ github.sha }}" ]; then
+            echo "The argument GH_SHA does not match the expected value."
+            exit 1
+          fi
 
       - name: Check the output
         run: |

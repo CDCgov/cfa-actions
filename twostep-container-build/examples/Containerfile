@@ -1,10 +1,9 @@
 ARG TAG=dependencies-latest
 ARG IMAGE=ghcr.io/cdcgov/cfa-actions
+ARG GH_SHA=default_var
 
 FROM ${IMAGE}:${TAG}
 
-# Notice that ARG are reset after the FROM
-ARG GH_SHA=default_var
 LABEL GH_SHA=${GH_SHA}
 
 COPY . /app/.
