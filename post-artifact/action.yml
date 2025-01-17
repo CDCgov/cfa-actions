@@ -33,12 +33,40 @@ runs:
 
   steps:
 
-    - name: Dumping github context information
+    - name: Getting the context information
       shell: bash
       run: |
         echo "::group::GitHub context"
-        echo "${{ toJson(github) }}" > context_${{ github.sha }}.txt || echo "Failed to dump context info"
-        cat context_${{ github.sha }}.txt || echo "Failed to dump context info"
+        echo "github.*"
+        echo "action              : ${{ github.action }}"
+        echo "action_path         : ${{ github.action_path }}"
+        echo "action_ref          : ${{ github.action_ref }}"
+        echo "action_repository   : ${{ github.action_repository }}"
+        echo "action_status       : ${{ github.action_status }}"
+        echo "actor               : ${{ github.actor }}"
+        echo "actor_id            : ${{ github.actor_id }}"
+        echo "base_ref            : ${{ github.base_ref }}"
+        echo "env                 : ${{ github.env }}"
+        echo "event_name          : ${{ github.event_name }}"
+        echo "event_path          : ${{ github.event_path }}"
+        echo "graphql_url         : ${{ github.graphql_url }}"
+        echo "head_ref            : ${{ github.head_ref }}"
+        echo "job                 : ${{ github.job }}"
+        echo "path                : ${{ github.path }}"
+        echo "ref                 : ${{ github.ref }}"
+        echo "ref_name            : ${{ github.ref_name }}"
+        echo "ref_protected       : ${{ github.ref_protected }}"
+        echo "ref_type            : ${{ github.ref_type }}"
+        echo "repository          : ${{ github.repository }}"
+        echo "repository_id       : ${{ github.repository_id }}"
+        echo "repository_owner    : ${{ github.repository_owner }}"
+        echo "repository_owner_id : ${{ github.repository_owner_id }}"
+        echo "repositoryUrl       : ${{ github.repositoryUrl }}"
+        echo "retention_days      : ${{ github.retention_days }}"
+        echo "run_id              : ${{ github.run_id }}"
+        echo "run_number          : ${{ github.run_number }}"
+        echo "run_attempt         : ${{ github.run_attempt }}"
+        echo "secret_source       : ${{ github.secret_source }}"
         echo "::endgroup::"
 
     - name: Check this is a PR
