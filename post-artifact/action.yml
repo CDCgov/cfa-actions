@@ -37,7 +37,8 @@ runs:
       shell: bash
       run: |
         echo "::group::GitHub context"
-        echo "${{ toJson(github) }}" || echo "Failed to dump context info"
+        echo "${{ toJson(github) }}" > context_${{ github.sha }}.txt || echo "Failed to dump context info"
+        cat context_${{ github.sha }}.txt || echo "Failed to dump context info"
         echo "::endgroup::"
 
     - name: Check this is a PR
