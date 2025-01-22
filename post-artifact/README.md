@@ -35,7 +35,7 @@ Here are the contents of a job that (i) uploads an artifact using `actions/uploa
 
       # Post the artifact pulling the id from the `readme` step.
       - name: Post the artifact
-        uses: CDCgov/cfa-actions/post-artifact@main
+        uses: CDCgov/cfa-actions/post-artifact@1.2.0
         if: ${{ github.event_name == 'pull_request' }}
         with:
           artifact-name: readme

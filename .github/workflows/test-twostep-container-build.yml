@@ -14,6 +14,7 @@ on:
   workflow_dispatch:
 
 jobs:
+  # This job is used to build and push the image.
   test-no-args:
     runs-on: ubuntu-latest
 
@@ -35,11 +36,52 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
           container-file-1: twostep-container-build/examples/Containerfile.dependencies
           container-file-2: twostep-container-build/examples/Containerfile
-          first-step-cache-key: ${{ hashFiles('twostep-container-build/examples/Containerfile.dependencies') }}
+          first-step-cache-key: no-args-${{ hashFiles('twostep-container-build/examples/Containerfile.dependencies') }}
           image: cdcgov/cfa-actions
+  
+  # This job is used to rerun the first step of the build
+  # to ensure that caching is working as expected.
+  test-no-args-rerun:
+    runs-on: ubuntu-latest
+    needs: test-no-args
 
+    permissions:
+      contents: read
+      packages: write
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v4
+        name: Checkout code
+
+      - name: Two-step build
+        uses: ./twostep-container-build
+        id: twostep-1
+        with:
+          registry: ghcr.io/
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          container-file-1: twostep-container-build/examples/Containerfile.dependencies
+          container-file-2: twostep-container-build/examples/Containerfile
+          first-step-cache-key: no-args-${{ hashFiles('twostep-container-build/examples/Containerfile.dependencies') }}
+          image: cdcgov/cfa-actions
+          push-image-1: false
+          push-image-2: false
+
+      - name: Check the output
+        run: |
+          if [ "${{ steps.twostep-1.outputs.summary }}" == "cached" ]; then
+            echo "Using the cached version (OK)"
+          else
+            echo "This was supposed to use the cache version"
+            exit 1
+          fi
+
+  # This job is used to test the action with arguments.
+  # Caching should also be triggered here.
   test-with-args:
     runs-on: ubuntu-latest
+    needs: test-no-args
 
     permissions:
       contents: read
@@ -60,8 +102,8 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
           container-file-1: twostep-container-build/examples/Containerfile.dependencies
           container-file-2: twostep-container-build/examples/Containerfile
-          first-step-cache-key: ${{ hashFiles('twostep-container-build/examples/Containerfile.dependencies') }}
-          image: cdcgov/cfa-actions-with-args
+          first-step-cache-key: with-args-${{ hashFiles('twostep-container-build/examples/Containerfile.dependencies') }}
+          image: cdcgov/cfa-actions
           build-args-2: |
             GH_SHA=${{ github.sha }}
           push-image-1: false
@@ -69,6 +111,20 @@ jobs:
 
       - name: Listing the labels from the image
         run: |
-          docker inspect ghcr.io/cdcgov/cfa-actions-with-args:${{ steps.twostep-2.outputs.tag }} \
-            --format='{{json .Config.Labels}}' | jq .
-        
+          docker inspect ghcr.io/cdcgov/cfa-actions:${{ steps.twostep-2.outputs.tag }} \
+            --format='{{ index .Config.Labels "GH_SHA" }}' > _${{ github.sha }}_labels.json
+
+          if [ "$(cat _${{ github.sha }}_labels.json)" != "${{ github.sha }}" ]; then
+            echo "The argument GH_SHA does not match the expected value."
+            exit 1
+          fi
+
+      - name: Check the output
+        run: |
+          if [ "${{ steps.twostep-2.outputs.summary }}" == "rebuilt" ]; then
+            echo "Using a re-built version (OK)"
+          else
+            echo "This was supposed to use the cache version"
+            exit 1
+          fi
+    

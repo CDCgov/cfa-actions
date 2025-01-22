@@ -9,7 +9,22 @@ flowchart LR
   Containerfile2-->|Generates|Image2
 ```
 
-Caching is done using the [actions/cache](https://github.com/actions/cache/tree/v4) (lookup only) and [docker/build-push-action@v6](https://github.com/docker/build-push-action/tree/v6) actions. Users have to explicitly provide the cache key for the first step. For example, if you are dealing with an R package, you can cache the dependencies by passing the key `${{ hashFiles('DESCRIPTION') }}` to the `first-step-cache-key` input. That way, the first step will only be executed if the dependencies change.
+The bulk of the action is dealing with whether the first image is available or not. If available, the action will check if the cache key matches the hash of the container file. If it does, the action will skip the first step and use the cached image. If the cache key does not match, the action will build the image and push it to the registry (if `push-image-1` is set to `true`):
+
+```mermaid
+flowchart TB
+  subgraph "Caching"
+    start((Start)) --> tag_exists
+    tag_exists{Tag exists}-->|Yes|pull_image
+    pull_image[Pull image<br>& inspect<br>labels]-->check_label
+    check_label{Label<br>matches<br>hash}-->|Yes|done((Done))
+    check_label-->|No|build_image["Build image<br>& push (optional)"]
+    tag_exists-->|No|build_image
+    build_image-->done
+  end
+```
+
+Caching is done by storing the cache-key as a label in the image (`TWO_STEP_BUILD_CACHE_KEY`); and the build and push process is done using the [docker/build-push-action@v6](https://github.com/docker/build-push-action/tree/v6) action. Users have to explicitly provide the cache key for the first step. For example, if you are dealing with an R package, you can cache the dependencies by passing the key `${{ hashFiles('DESCRIPTION') }}` to the `first-step-cache-key` input. That way, the first step will only be executed if the dependencies change.
 
 ## Inputs and Outputs
 
@@ -33,6 +48,8 @@ The following are arguments passed to the [docker/build-push-action@v6](https://
 | `push-image-2` | Push the image created during the second step | false | `false` |
 | `build-args-1` | Build arguments for the first step | false | |
 | `build-args-2` | Build arguments for the second step | false | |
+| `labels-1` | Labels for the first step | false | |
+| `labels-2` | Labels for the second step | false | |
 
 The action has the following outputs:
 
@@ -40,6 +57,7 @@ The action has the following outputs:
 |-------|-------------|
 | `tag` | Container tag of the built image |
 | `branch` | Branch name |
+| `summary` | A summary of the action: (`built`, `re-built`, or `cached`) |
 
 
 ## Example: Using ghcr.io
@@ -71,7 +89,7 @@ jobs:
         name: Checkout code
 
       - name: Two-step build
-        uses: CDCgov/cfa-actions/twostep-container-build@v1.1.0
+        uses: CDCgov/cfa-actions/twostep-container-build@v1.2.0
         with:
           # Login information
           registry: ghcr.io/
@@ -106,12 +124,18 @@ CMD ["bash"]
 [`Containerfile`](examples/Containerfile)
 
 ```Containerfile
+# Collection of ARGs
 ARG TAG=dependencies-latest
+ARG IMAGE=ghcr.io/cdcgov/cfa-actions
+ARG GH_SHA=default_var
 
-FROM ghcr.io/cdcgov/cfa-actions:${TAG}
+FROM ${IMAGE}:${TAG}
 
-COPY twostep-container-build/example/Containerfile /app/.
+# Re-declaring the ARGs here is necessary to use them in the LABEL
+ARG GH_SHA
+LABEL GH_SHA=${GH_SHA}
 
+COPY . /app/.
 CMD ["bash"]
 ```
 
