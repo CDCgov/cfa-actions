@@ -34,9 +34,9 @@ Caching is done by storing the cache-key as a label in the image (`TWO_STEP_BUIL
 | `container-file-2` | Path to the second container file | true | |
 | `first-step-cache-key` | Cache key for the first step | true | |
 | `image` | Name of the image | true | |
+| `registry` | Registry to push the image to | true |  |
 | `username` | Username for the registry | false |  |
 | `password` | Password for the registry | false |  |
-| `registry` | Registry to push the image to | false |  |
 | `main-branch-name` | Name of the main branch | false | `'main'` |
 | `main-branch-tag` | Tag to use for the main branch | false | `'latest'` |
 
