@@ -100,6 +100,7 @@ jobs:
           container-file-2: ./Containerfile
           first-step-cache-key: docker-dependencies-${{ runner.os }}-${{ hashFiles('./Containerfile.dependencies') }}
           image: ${{ env.IMAGE_NAME }}
+          registry: $${ env.CONTAINER_REGISTRY_NAME }}.azurecr.io/
           build-args-2: |
             TAG=${{ steps.image.outputs.tag }}
             GIT_COMMIT_SHA=${{ github.event.pull_request.head.sha || github.sha }}
