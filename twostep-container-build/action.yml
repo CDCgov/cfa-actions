@@ -47,7 +47,6 @@ inputs:
       with trailing slash. For example, ghcr.io/,
       cfaprodbatchcr.azurecr.io/, etc.
     required: true
-    default: ''
   main-branch-name:
     description: |
       The name of the repository's base branch. Defaults to main.
