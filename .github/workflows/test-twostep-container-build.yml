@@ -127,4 +127,33 @@ jobs:
             echo "This was supposed to use the cache version"
             exit 1
           fi
-    
+
+  test-azure-cr:
+    runs-on: cfa-cdcgov
+    name: Build and push image
+    steps:
+      - name: Login to Azure
+        id: azure_login_2
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZ_SERVICE_PRINCIPAL_CREDS_STRING }}
+
+      - name: Login to ACR
+        run: az acr login --name ${{ vars.AZ_CONTAINER_REGISTRY_NAME }}
+        
+      - name: Build and push image
+        id: build-push
+        uses: CDCgov/cfa-actions/twostep-container-build@v1.2.0
+        with:
+          container-file-1: twostep-container-build/examples/Containerfile.dependencies
+          container-file-2: twostep-container-build/examples/Containerfile
+          first-step-cache-key: with-args-${{ hashFiles('twostep-container-build/examples/Containerfile.dependencies') }}
+          image: cdcgov/_cfa-actions-test
+          build-args-2: |
+            GH_SHA=${{ github.sha }}
+          push-image-1: true
+          push-image-2: true
+      - name: Clean up by deleting image
+        id: delete-images
+        run: az acr repository delete --name {{ vars.AZ_CONTAINER_REGISTRY_NAME }} --repository cdcgov/_cfa-actions-test
+        
