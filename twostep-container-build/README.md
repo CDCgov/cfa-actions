@@ -94,7 +94,7 @@ jobs:
         
       - name: Build and push image
         id: build-push
-        uses: CDCgov/cfa-actions/twostep-container-build@v1.2.0
+        uses: CDCgov/cfa-actions/twostep-container-build@v1.2.1
         with:
           container-file-1: ./Containerfile.dependencies
           container-file-2: ./Containerfile
