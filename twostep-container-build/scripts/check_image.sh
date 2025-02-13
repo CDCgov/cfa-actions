@@ -27,6 +27,16 @@ while [[ "$#" -gt 0 ]]; do
             echo "  -t, --tag       The image tag."
             echo "  -o, --output    The output file to write the result to."
             echo "  -s, --strategy  The strategy to use for pulling the image. Default: docker"
+            echo ""
+            echo "Examples"
+            echo "----------"
+            echo ""
+            echo "Using GitHub actions, you could use it as follows:"
+            echo ""
+            echo "- name: Check if image exists"
+            echo "  run: |"
+            echo "    ./check_image.sh -r docker.io/library -i alpine -t 3.12 -o \$GITHUB_OUTPUT"
+            echo ""
             exit 0
             ;;
         *) 
