@@ -173,7 +173,7 @@ runs:
       id: pull-image
       shell: bash
       run: |
-        python ${GITHUB_ACTION_PATH}/scripts/check_image.sh \
+        python ${GITHUB_ACTION_PATH}/scripts/check_image.py \
           --registry ${{ inputs.registry }} \
           --image ${{ inputs.image }} \
           --tag dependencies-${{ steps.image-tag.outputs.tag }} \
