@@ -187,7 +187,7 @@ runs:
 
         # Inspecting the image
         python ${GITHUB_ACTION_PATH}/scripts/compare_images.py \
-          --image ${{ inputes.registry }}${{ inputs.image }}:dependencies-${{ steps.image-tag.outputs.tag }} \
+          --image ${{ inputs.registry }}${{ inputs.image }}:dependencies-${{ steps.image-tag.outputs.tag }} \
           --hash ${{ inputs.first-step-cache-key }} \
           --output $GITHUB_OUTPUT
           --label TWO_STEP_BUILD_CACHE_KEY
