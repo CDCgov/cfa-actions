@@ -189,7 +189,7 @@ runs:
         python ${GITHUB_ACTION_PATH}/scripts/compare_images.py \
           --image ${{ inputs.registry }}${{ inputs.image }}:dependencies-${{ steps.image-tag.outputs.tag }} \
           --key ${{ inputs.first-step-cache-key }} \
-          --output $GITHUB_OUTPUT
+          --output $GITHUB_OUTPUT \
           --label TWO_STEP_BUILD_CACHE_KEY
 
     - name: Build and push
