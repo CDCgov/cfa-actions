@@ -173,17 +173,11 @@ runs:
       id: pull-image
       shell: bash
       run: |
-        # Ensuring we can pull the image, if cache exists
-        docker pull ${{ inputs.registry }}${{ inputs.image }}:dependencies-${{ steps.image-tag.outputs.tag }} || \
-          export IMAGE_NOT_FOUND=tue
-
-        if [ -n "$IMAGE_NOT_FOUND" ]; then
-          echo "Image was not found, it will be built."
-          echo "image-found=false" >> $GITHUB_OUTPUT
-        else
-          echo "Image found, we will inspect the labels to check for cache."
-          echo "image-found=true" >> $GITHUB_OUTPUT
-        fi
+        ${GITHUB_ACTION_PATH}/scripts/check_image.sh \
+          --registry ${{ inputs.registry }} \
+          --image ${{ inputs.image }} \
+          --tag dependencies-${{ steps.image-tag.outputs.tag }} \
+          --output ${{ GITHUB_OUTPUT }}
     
     - name: Checking if matches cache
       if: steps.pull-image.outputs.image-found == 'true'
