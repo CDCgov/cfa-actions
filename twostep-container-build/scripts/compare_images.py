@@ -61,7 +61,7 @@ def main():
     label_value = result.decode("utf-8").strip()
 
     # Compare label_value with the expected cache key
-    if label_value != args.cache_key:
+    if label_value != args.key:
         print("Cache hash does not match.")
         output_line = "cache-hit=false"
     else:
