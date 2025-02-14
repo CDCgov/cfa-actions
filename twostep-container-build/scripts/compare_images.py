@@ -51,7 +51,7 @@ def main():
         # The --format directive returns only the label's value
         result = subprocess.check_output([
             args.strategy, "inspect",
-            "--format={{ index .Config.Labels \" " + args.label + " \" }}",
+            "--format={{ index .Config.Labels \"" + args.label + "\" }}",
             image
         ])
     except subprocess.CalledProcessError:
