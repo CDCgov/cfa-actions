@@ -1,0 +1,186 @@
+name: runner-action
+description: |
+  This action allows cdcgov repos to run a script on a self-hosted
+  runner in the Azure Ext subscription. The script is encrypted before
+  being sent over the network, so it is safe to use secrets. Check
+  the Predict Handbook for [runner limitations](https://github.com/cdcent/cfa-predict-handbook/blob/main/docs/vap-5-Github-actions_runners.md)
+  
+inputs:
+  github_app_id:
+    description: |
+      A GitHub App ID installed on CDCEnt
+    required: true
+  github_app_pem: 
+    description: |
+      The PEM-encoded string for the GitHub App
+    required: true
+  script:
+    description: |
+      A bash script to be run on the Azure self-hosted runner
+    required: true
+  wait_for_completion:
+    description: true/false to wait for the dispatched workflow to complete
+    required: false
+    default: false
+  print_logs:
+    description: true/false to print the action logs once the workflow has completed
+    required: false
+    default: false
+
+env:
+  PUBLIC_KEY: |
+    -----BEGIN PUBLIC KEY-----
+    MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAli9U3+pvL8lOhbHcAkBa
+    UbhZO4MCwCRxJwMC1tzHMBKcG2SeLv0lFto/QtfAfyamjd/fgyr37p6olMkQB1xr
+    oF9lt/OVUMLhM3F4wz7voYH+SKwMC/H241CHfWN8vnsmFwGVGQVRYKnVbA7pnp9r
+    9JfB6W0S4TNYE/30vOl2z9vZMa+pBY2nqpTH3PvS3JPfcX+bCqlnL2YX8TSiWIWb
+    ubbzJdWpLzKiwziCNFtTNc2+WEuwcSEURLd9NfFSXZPjJXc2rWxkjLdbcCArVwnB
+    aPp1/uwOedARtv3Us/jcP/FrRoQk/DBYrGSPplYzxnl+E780N4LveXxuvkq/Ad2E
+    0QIDAQAB
+    -----END PUBLIC KEY-----
+runs:
+  env:
+    OWNER: "cdcent"
+    REPO: "cfa-cdcgov-actions"
+  steps:
+    - name: Generate JWT
+      run: |
+        client_id=${{ inputs.github_app_id }}
+
+        pem=${{ inputs.github_app_pem }}
+
+        now=$(date +%s)
+        iat=$((${now} - 60)) # Issues 60 seconds in the past
+        exp=$((${now} + 600)) # Expires 10 minutes in the future
+
+        b64enc() { openssl base64 | tr -d '=' | tr '/+' '_-' | tr -d '\n'; }
+
+        header_json='{
+            "typ":"JWT",
+            "alg":"RS256"
+        }'
+        # Header encode
+        header=$( echo -n "${header_json}" | b64enc )
+
+        payload_json="{
+            \"iat\":${iat},
+            \"exp\":${exp},
+            \"iss\":\"${client_id}\"
+        }"
+        # Payload encode
+        payload=$( echo -n "${payload_json}" | b64enc )
+
+        # Signature
+        header_payload="${header}"."${payload}"
+        signature=$(
+            openssl dgst -sha256 -sign <(echo -n "${pem}") \
+            <(echo -n "${header_payload}") | b64enc
+        )
+
+        # Create JWT
+        JWT="${header_payload}"."${signature}"
+        echo "GITHUB_JWT=$JWT" >> $GITHUB_ENV
+
+    - name: Get Install Token
+      run: |
+        INSTALL_ID="55092555" # install id for the GitHub app in cdcgov
+
+        INSTALL_RES=$(curl --request POST \
+        --url "https://api.github.com/app/installations/$INSTALL_ID/access_tokens" \
+        --header "Accept: application/vnd.github+json" \
+        --header "Authorization: Bearer $GITHUB_JWT" \
+        --header "X-GitHub-Api-Version: 2022-11-28")
+        export GITHUB_TOKEN=$(echo "$INSTALL_RES" | jq -r '.token')
+        echo "GITHUB_TOKEN=$GITHUB_TOKEN" >> $GITHUB_ENV
+
+    - name: Generate Unique Run Name
+      run: |
+        echo "UNIQUE_RUN_NAME=${{ github.repository_owner }}_${{ github.event.repository.name }}_${{ github.run_id }}" >> $GITHUB_ENV
+
+    - name: Encrypt Script
+      run: |
+        ENCRYPTED_SCRIPT=$(echo "${{ inputs.script }}" | openssl pkeyutl -encrypt -pubin -inkey <(echo "${{ env.PUBLIC_KEY }}")| base64)
+        echo "ENCRYPTED_SCRIPT=$ENCRYPTED_SCRIPT" >> $GITHUB_ENV
+
+
+    - name: Dispatch Encrypted Script
+      run: |
+        curl -X POST \
+          -H "Authorization: token $GITHUB_TOKEN" \
+          -H "Accept: application/vnd.github.v3+json" \
+          https://api.github.com/repos/$OWNER/$REPO/dispatches \
+          -d "{\"event_type\":\"$UNIQUE_RUN_NAME\",\"client_payload\":{\"encrypted_script\":\"$ENCRYPTED_SCRIPT\"}}"
+
+    - name: Poll for completion
+      if: ${{ inputs.wait_for_completion == 'true' || inputs.print_logs == 'true' }}
+      run: |
+        MAX_RETRIES=20
+        RETRY_INTERVAL=15
+        # Wait for a few seconds to ensure the workflow run is created
+        sleep 10
+
+        # List workflow runs and filter by unique identifier
+        response=$(curl -H "Authorization: token $GITHUB_TOKEN" \
+          -H "Accept: application/vnd.github.v3+json" \
+          https://api.github.com/repos/$OWNER/$REPO/actions/runs?event=repository_dispatch)
+
+        # Retrieve the run_id, returning the first matching display_title
+        run_id=$(echo $response | jq -r ".workflow_runs[] | select(.display_title | contains(\"$UNIQUE_RUN_NAME\")) | .id" | head -n 1)
+
+        echo "The run_id is: $run_id"
+
+        if [[ -e "$run_id" ]]; then
+          echo "Failed to get run_id!"
+          exit 1
+        fi
+
+
+        # Poll the workflow run status until it is completed
+        status=""
+        retries=0
+        while [[ "$status" != "completed" && $retries -lt $MAX_RETRIES ]]; do
+          # Get the current status of the workflow run
+          run_status=$(curl -H "Authorization: token $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/$OWNER/$REPO/actions/runs/$run_id)
+
+          status=$(echo $run_status | jq -r '.status')
+          conclusion=$(echo $run_status | jq -r '.conclusion')
+
+          echo "Workflow run status: $status"
+
+          if [[ "$status" != "completed" ]]; then
+            echo "Waiting for $RETRY_INTERVAL seconds before retrying..."
+            sleep $RETRY_INTERVAL
+            retries=$((retries + 1))
+          fi
+        done
+
+        if [[ "$status" != "completed" ]]; then
+          echo "Workflow run did not complete within the expected time."
+          exit 1
+        fi
+
+        echo "Workflow run completed with conclusion: $conclusion"
+        echo "run_id=$run_id" >> $GITHUB_ENV
+
+    - name: Get Logs
+      if: ${{ inputs.print_logs == 'true' }}
+      run: |
+        # Retrieve the logs for the specified run_id
+        logs_url="https://api.github.com/repos/$OWNER/$REPO/actions/runs/$run_id/logs"
+        echo "Fetching logs from: $logs_url"
+
+        # Download the logs as a zip file
+        curl -L -H "Authorization: token $GITHUB_TOKEN" \
+             -H "Accept: application/vnd.github.v3+json" \
+             "$logs_url" --output run_logs.zip
+
+        # Unzip the logs for easier access
+        unzip -o run_logs.zip -d run_logs
+
+        echo "Logs have been downloaded and unzipped to the run_logs directory."
+
+        # print logs from run step
+        cat run_logs/Run\ Script/2_Run\ Script.txt
+
