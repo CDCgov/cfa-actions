@@ -77,7 +77,7 @@ runs:
         curl -X POST \
           -H "Authorization: token ${{ steps.create_token.outputs.token }}" \
           -H "Accept: application/vnd.github.v3+json" \
-          ${{ REPO_URL }}/dispatches \
+          ${{ steps.globals.outputs.REPO_URL }}/dispatches \
           -d '{"event_type":"${{ steps.unique-run-name.outputs.name }}","client_payload":{"encrypted_script":"${{ steps.encrypt-script.outputs.script }}"}}'
 
     - name: Poll for completion
@@ -92,7 +92,7 @@ runs:
         # List workflow runs and filter by unique identifier
         response=$(curl -H "Authorization: token $GITHUB_TOKEN" \
           -H "Accept: application/vnd.github.v3+json" \
-          ${{ REPO_URL }}/actions/runs?event=repository_dispatch)
+          ${{ steps.globals.outputs.REPO_URL }}/actions/runs?event=repository_dispatch)
 
         # Retrieve the run_id, returning the first matching display_title
         run_id=$(echo $response | jq -r '.workflow_runs[] | select(.display_title | contains("${{ steps.unique-run-name.outputs.name }}")) | .id' | head -n 1)
@@ -112,7 +112,7 @@ runs:
           # Get the current status of the workflow run
           run_status=$(curl -H "Authorization: token $GITHUB_TOKEN" \
             -H "Accept: application/vnd.github.v3+json" \
-            "${{ REPO_URL }}/actions/runs/$run_id")
+            "${{ steps.globals.outputs.REPO_URL }}/actions/runs/$run_id")
 
           status=$(echo $run_status | jq -r '.status')
           conclusion=$(echo $run_status | jq -r '.conclusion')
@@ -139,7 +139,7 @@ runs:
       if: ${{ inputs.print_logs == 'true' }}
       run: |
         # Retrieve the logs for the specified run_id
-        logs_url="${{ REPO_URL }}/actions/runs/$run_id/logs"
+        logs_url="${{ steps.globals.outputs.REPO_URL }}/actions/runs/$run_id/logs"
         echo "Fetching logs from: $logs_url"
 
         # Download the logs as a zip file
