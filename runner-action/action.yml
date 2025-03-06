@@ -36,11 +36,19 @@ runs:
       shell: bash
       run: |
         OWNER='cdcent'
-        PUBLIC_KEY="-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAli9U3+pvL8lOhbHcAkBa\nUbhZO4MCwCRxJwMC1tzHMBKcG2SeLv0lFto/QtfAfyamjd/fgyr37p6olMkQB1xr\noF9lt/OVUMLhM3F4wz7voYH+SKwMC/H241CHfWN8vnsmFwGVGQVRYKnVbA7pnp9r\n9JfB6W0S4TNYE/30vOl2z9vZMa+pBY2nqpTH3PvS3JPfcX+bCqlnL2YX8TSiWIWb\nubbzJdWpLzKiwziCNFtTNc2+WEuwcSEURLd9NfFSXZPjJXc2rWxkjLdbcCArVwnB\naPp1/uwOedARtv3Us/jcP/FrRoQk/DBYrGSPplYzxnl+E780N4LveXxuvkq/Ad2E\n0QIDAQAB\n-----END PUBLIC KEY-----"
+        PUBLIC_KEY="-----BEGIN PUBLIC KEY-----
+        MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAli9U3+pvL8lOhbHcAkBa
+        UbhZO4MCwCRxJwMC1tzHMBKcG2SeLv0lFto/QtfAfyamjd/fgyr37p6olMkQB1xr
+        oF9lt/OVUMLhM3F4wz7voYH+SKwMC/H241CHfWN8vnsmFwGVGQVRYKnVbA7pnp9r
+        9JfB6W0S4TNYE/30vOl2z9vZMa+pBY2nqpTH3PvS3JPfcX+bCqlnL2YX8TSiWIWb
+        ubbzJdWpLzKiwziCNFtTNc2+WEuwcSEURLd9NfFSXZPjJXc2rWxkjLdbcCArVwnB
+        aPp1/uwOedARtv3Us/jcP/FrRoQk/DBYrGSPplYzxnl+E780N4LveXxuvkq/Ad2E
+        0QIDAQAB
+        -----END PUBLIC KEY-----"
         echo "OWNER=$OWNER" >> "$GITHUB_OUTPUT"
         echo "REPO_URL=https://api.github.com/repos/$OWNER/cfa-cdcgov-actions" >> "$GITHUB_OUTPUT"
         echo "PUBLIC_KEY=$PUBLIC_KEY" >> "$GITHUB_OUTPUT"
-        
+
     - name: Create GitHub App token
       id: create_token
       uses: actions/create-github-app-token@v1
@@ -59,8 +67,17 @@ runs:
       shell: bash
       id: encrypt-script
       run: |
-        ENCRYPTED_SCRIPT=$(echo "${{ inputs.script }}" | openssl pkeyutl -encrypt -pubin -inkey <(echo "${{ steps.globals.outputs.PUBLIC_KEY }}")| base64)
+        # Generate a 32-byte AES key for AES-256 encryption
+        openssl rand -out aes_key.bin 32
+
+        # encrypt script using AES key
+        ENCRYPTED_SCRIPT=$(echo "${{ inputs.script }}" | openssl enc -pubin -aes-256-cbc -salt -pass file:aes_key.bin | base64)
+
+        # encrypt key using RSA public key
+        ENCRYPTED_KEY=$(openssl pkeyutl -encrypt -in aes_key.bin -pubin -inkey <(echo "${{ steps.globals.outputs.PUBLIC_KEY }}") | base64)
+
         echo "script=$ENCRYPTED_SCRIPT" >> "$GITHUB_OUTPUT"
+        echo "key=$ENCRYPTED_KEY" >> "$GITHUB_OUTPUT"
 
 
     - name: Dispatch Encrypted Script
@@ -70,7 +87,7 @@ runs:
           -H "Authorization: token ${{ steps.create_token.outputs.token }}" \
           -H "Accept: application/vnd.github.v3+json" \
           ${{ steps.globals.outputs.REPO_URL }}/dispatches \
-          -d '{"event_type":"${{ steps.unique-run-name.outputs.name }}","client_payload":{"encrypted_script":"${{ steps.encrypt-script.outputs.script }}"}}'
+          -d '{"event_type":"${{ steps.unique-run-name.outputs.name }}","client_payload":{"encrypted_script":"${{ steps.encrypt-script.outputs.script }}","encrypted_key":"${{ steps.encrypt-script.outputs.key }}"}}'
 
     - name: Poll for completion
       shell: bash
