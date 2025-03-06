@@ -27,52 +27,61 @@ inputs:
     required: false
     default: false
 
-env:
-  PUBLIC_KEY: |
-    -----BEGIN PUBLIC KEY-----
-    MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAli9U3+pvL8lOhbHcAkBa
-    UbhZO4MCwCRxJwMC1tzHMBKcG2SeLv0lFto/QtfAfyamjd/fgyr37p6olMkQB1xr
-    oF9lt/OVUMLhM3F4wz7voYH+SKwMC/H241CHfWN8vnsmFwGVGQVRYKnVbA7pnp9r
-    9JfB6W0S4TNYE/30vOl2z9vZMa+pBY2nqpTH3PvS3JPfcX+bCqlnL2YX8TSiWIWb
-    ubbzJdWpLzKiwziCNFtTNc2+WEuwcSEURLd9NfFSXZPjJXc2rWxkjLdbcCArVwnB
-    aPp1/uwOedARtv3Us/jcP/FrRoQk/DBYrGSPplYzxnl+E780N4LveXxuvkq/Ad2E
-    0QIDAQAB
-    -----END PUBLIC KEY-----
 runs:
   using: "composite"
-  env:
-    OWNER: "cdcent"
-    REPO: "cfa-cdcgov-actions"
   steps:
+  
+    - name: Set globals
+      id: globals
+      shell: bash
+      run: |
+        OWNER='cdcent'
+        echo "OWNER=$OWNER" >> "$GITHUB_OUTPUT"
+        echo "REPO_URL=https://api.github.com/repos/$OWNER/cfa-cdcgov-actions" >> "$GITHUB_OUTPUT"
+        echo 'PUBLIC_KEY="-----BEGIN PUBLIC KEY-----
+        MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAli9U3+pvL8lOhbHcAkBa
+        UbhZO4MCwCRxJwMC1tzHMBKcG2SeLv0lFto/QtfAfyamjd/fgyr37p6olMkQB1xr
+        oF9lt/OVUMLhM3F4wz7voYH+SKwMC/H241CHfWN8vnsmFwGVGQVRYKnVbA7pnp9r
+        9JfB6W0S4TNYE/30vOl2z9vZMa+pBY2nqpTH3PvS3JPfcX+bCqlnL2YX8TSiWIWb
+        ubbzJdWpLzKiwziCNFtTNc2+WEuwcSEURLd9NfFSXZPjJXc2rWxkjLdbcCArVwnB
+        aPp1/uwOedARtv3Us/jcP/FrRoQk/DBYrGSPplYzxnl+E780N4LveXxuvkq/Ad2E
+        0QIDAQAB
+        -----END PUBLIC KEY-----"' >> "$GITHUB_OUTPUT"
+        
     - name: Create GitHub App token
+      shell: bash
       id: create_token
       uses: actions/create-github-app-token@v1
       with:
         app-id: ${{ inputs.github_app_id }}
         private-key: ${{ inputs.github_app_pem }}
-        owner: ${{ env.OWNER }}
+        owner: ${{ steps.globals.outputs.OWNER }}
 
     - name: Generate Unique Run Name
+      shell: bash
       id: unique-run-name
       run: |
         echo "name=${{ github.repository_owner }}_${{ github.event.repository.name }}_${{ github.run_id }}" >> "$GITHUB_OUTPUT"
 
     - name: Encrypt Script
+      shell: bash
       id: encrypt-script
       run: |
-        ENCRYPTED_SCRIPT=$(echo "${{ inputs.script }}" | openssl pkeyutl -encrypt -pubin -inkey <(echo "${{ env.PUBLIC_KEY }}")| base64)
+        ENCRYPTED_SCRIPT=$(echo "${{ inputs.script }}" | openssl pkeyutl -encrypt -pubin -inkey <(echo "${{ steps.globals.outputs.PUBLIC_KEY }}")| base64)
         echo "script=$ENCRYPTED_SCRIPT" >> "$GITHUB_OUTPUT"
 
 
     - name: Dispatch Encrypted Script
+      shell: bash
       run: |
         curl -X POST \
           -H "Authorization: token ${{ steps.create_token.outputs.token }}" \
           -H "Accept: application/vnd.github.v3+json" \
-          https://api.github.com/repos/$OWNER/$REPO/dispatches \
+          ${{ REPO_URL }}/dispatches \
           -d '{"event_type":"${{ steps.unique-run-name.outputs.name }}","client_payload":{"encrypted_script":"${{ steps.encrypt-script.outputs.script }}"}}'
 
     - name: Poll for completion
+      shell: bash
       if: ${{ inputs.wait_for_completion == 'true' || inputs.print_logs == 'true' }}
       run: |
         MAX_RETRIES=20
@@ -83,7 +92,7 @@ runs:
         # List workflow runs and filter by unique identifier
         response=$(curl -H "Authorization: token $GITHUB_TOKEN" \
           -H "Accept: application/vnd.github.v3+json" \
-          https://api.github.com/repos/$OWNER/$REPO/actions/runs?event=repository_dispatch)
+          ${{ REPO_URL }}/actions/runs?event=repository_dispatch)
 
         # Retrieve the run_id, returning the first matching display_title
         run_id=$(echo $response | jq -r '.workflow_runs[] | select(.display_title | contains("${{ steps.unique-run-name.outputs.name }}")) | .id' | head -n 1)
@@ -103,7 +112,7 @@ runs:
           # Get the current status of the workflow run
           run_status=$(curl -H "Authorization: token $GITHUB_TOKEN" \
             -H "Accept: application/vnd.github.v3+json" \
-            "https://api.github.com/repos/$OWNER/$REPO/actions/runs/$run_id")
+            "${{ REPO_URL }}/actions/runs/$run_id")
 
           status=$(echo $run_status | jq -r '.status')
           conclusion=$(echo $run_status | jq -r '.conclusion')
@@ -126,10 +135,11 @@ runs:
         echo "run_id=$run_id" >> "$GITHUB_ENV"
 
     - name: Get Logs
+      shell: bash
       if: ${{ inputs.print_logs == 'true' }}
       run: |
         # Retrieve the logs for the specified run_id
-        logs_url="https://api.github.com/repos/$OWNER/$REPO/actions/runs/$run_id/logs"
+        logs_url="${{ REPO_URL }}/actions/runs/$run_id/logs"
         echo "Fetching logs from: $logs_url"
 
         # Download the logs as a zip file
