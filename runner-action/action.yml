@@ -36,19 +36,7 @@ runs:
       shell: bash
       run: |
         OWNER='cdcent'
-        PUBLIC_KEY=$(cat <<EOF
-        -----BEGIN PUBLIC KEY-----
-        MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAli9U3+pvL8lOhbHcAkBa
-        UbhZO4MCwCRxJwMC1tzHMBKcG2SeLv0lFto/QtfAfyamjd/fgyr37p6olMkQB1xr
-        oF9lt/OVUMLhM3F4wz7voYH+SKwMC/H241CHfWN8vnsmFwGVGQVRYKnVbA7pnp9r
-        9JfB6W0S4TNYE/30vOl2z9vZMa+pBY2nqpTH3PvS3JPfcX+bCqlnL2YX8TSiWIWb
-        ubbzJdWpLzKiwziCNFtTNc2+WEuwcSEURLd9NfFSXZPjJXc2rWxkjLdbcCArVwnB
-        aPp1/uwOedARtv3Us/jcP/FrRoQk/DBYrGSPplYzxnl+E780N4LveXxuvkq/Ad2E
-        0QIDAQAB
-        -----END PUBLIC KEY-----
-        EOF
-        )
-        
+        PUBLIC_KEY="-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAli9U3+pvL8lOhbHcAkBa\nUbhZO4MCwCRxJwMC1tzHMBKcG2SeLv0lFto/QtfAfyamjd/fgyr37p6olMkQB1xr\noF9lt/OVUMLhM3F4wz7voYH+SKwMC/H241CHfWN8vnsmFwGVGQVRYKnVbA7pnp9r\n9JfB6W0S4TNYE/30vOl2z9vZMa+pBY2nqpTH3PvS3JPfcX+bCqlnL2YX8TSiWIWb\nubbzJdWpLzKiwziCNFtTNc2+WEuwcSEURLd9NfFSXZPjJXc2rWxkjLdbcCArVwnB\naPp1/uwOedARtv3Us/jcP/FrRoQk/DBYrGSPplYzxnl+E780N4LveXxuvkq/Ad2E\n0QIDAQAB\n-----END PUBLIC KEY-----"
         echo "OWNER=$OWNER" >> "$GITHUB_OUTPUT"
         echo "REPO_URL=https://api.github.com/repos/$OWNER/cfa-cdcgov-actions" >> "$GITHUB_OUTPUT"
         echo "PUBLIC_KEY=$PUBLIC_KEY" >> "$GITHUB_OUTPUT"
