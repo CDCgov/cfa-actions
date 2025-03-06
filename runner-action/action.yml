@@ -39,6 +39,7 @@ env:
     0QIDAQAB
     -----END PUBLIC KEY-----
 runs:
+  using: "composite"
   env:
     OWNER: "cdcent"
     REPO: "cfa-cdcgov-actions"
