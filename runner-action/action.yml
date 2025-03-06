@@ -71,7 +71,7 @@ runs:
       id: encrypt-script
       run: |
         # replace literal \\n with newlines \n
-        PUBLIC_KEY=$(echo "${{ steps.globals.outputs.PUBLIC_KEY }}" | sed 's/\\n/\n/g')
+        echo "${{ steps.globals.outputs.PUBLIC_KEY }}" | sed 's/\\n/\n/g' > public_key.crt
 
         # Generate a 32-byte AES key for AES-256 encryption
         openssl rand -out aes_key.bin 32
@@ -80,7 +80,7 @@ runs:
         ENCRYPTED_SCRIPT=$(echo "${{ inputs.script }}" | openssl enc -pubin -aes-256-cbc -salt -pass file:aes_key.bin | base64)
 
         # encrypt key using RSA public key
-        ENCRYPTED_KEY=$(openssl pkeyutl -encrypt -in aes_key.bin -pubin -inkey <(echo "$PUBLIC_KEY" | base64 -d) | base64)
+        ENCRYPTED_KEY=$(openssl pkeyutl -encrypt -in aes_key.bin -pubin -inkey public_key.crt | base64)
 
         echo "script=$ENCRYPTED_SCRIPT" >> "$GITHUB_OUTPUT"
         echo "key=$ENCRYPTED_KEY" >> "$GITHUB_OUTPUT"
