@@ -71,7 +71,8 @@ runs:
       id: encrypt-script
       run: |
         # replace literal \\n with newlines \n
-        echo "${{ steps.globals.outputs.PUBLIC_KEY }}" | sed 's/\\n/\n/g' > public_key.crt
+        PUBLIC_KEY=$(echo "${{ steps.globals.outputs.PUBLIC_KEY }}" | sed 's/\\n/\n/g') 
+        echo "$PUBLIC_KEY" > public_key.crt
 
         # Generate a 32-byte AES key for AES-256 encryption
         openssl rand -out aes_key.bin 32
