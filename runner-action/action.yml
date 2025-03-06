@@ -36,9 +36,7 @@ runs:
       shell: bash
       run: |
         OWNER='cdcent'
-        echo "OWNER=$OWNER" >> "$GITHUB_OUTPUT"
-        echo "REPO_URL=https://api.github.com/repos/$OWNER/cfa-cdcgov-actions" >> "$GITHUB_OUTPUT"
-        echo 'PUBLIC_KEY="-----BEGIN PUBLIC KEY-----
+        PUBLIC_KEY="-----BEGIN PUBLIC KEY-----
         MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAli9U3+pvL8lOhbHcAkBa
         UbhZO4MCwCRxJwMC1tzHMBKcG2SeLv0lFto/QtfAfyamjd/fgyr37p6olMkQB1xr
         oF9lt/OVUMLhM3F4wz7voYH+SKwMC/H241CHfWN8vnsmFwGVGQVRYKnVbA7pnp9r
@@ -46,7 +44,10 @@ runs:
         ubbzJdWpLzKiwziCNFtTNc2+WEuwcSEURLd9NfFSXZPjJXc2rWxkjLdbcCArVwnB
         aPp1/uwOedARtv3Us/jcP/FrRoQk/DBYrGSPplYzxnl+E780N4LveXxuvkq/Ad2E
         0QIDAQAB
-        -----END PUBLIC KEY-----"' >> "$GITHUB_OUTPUT"
+        -----END PUBLIC KEY-----"
+        echo "OWNER=$OWNER" >> "$GITHUB_OUTPUT"
+        echo "REPO_URL=https://api.github.com/repos/$OWNER/cfa-cdcgov-actions" >> "$GITHUB_OUTPUT"
+        echo "PUBLIC_KEY=$PUBLIC_KEY" >> "$GITHUB_OUTPUT"
         
     - name: Create GitHub App token
       shell: bash
