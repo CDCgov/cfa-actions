@@ -55,7 +55,7 @@ runs:
 
     - name: Print Script REMOVE BEFORE GOING LIVE
       shell: bash
-      run: echo "${{ inputs.script }}"
+      run: echo '${{ inputs.script }}'
 
     - name: Encrypt Script
       shell: bash
@@ -78,7 +78,7 @@ runs:
         echo "Generated AES key"$'\n'
 
         # encrypt script using AES key
-        ENCRYPTED_SCRIPT=$(echo "${{ inputs.script }}" | openssl enc -pubin -aes-256-cbc -salt -pass file:aes_key.bin | base64 | tr -d '\n')
+        ENCRYPTED_SCRIPT=$(echo '${{ inputs.script }}' | openssl enc -pubin -aes-256-cbc -salt -pass file:aes_key.bin | base64 | tr -d '\n')
         echo "Encrypted script"$'\n'
 
         # encrypt key using RSA public key
@@ -117,6 +117,8 @@ runs:
         response=$(curl -H "Authorization: token $GITHUB_TOKEN" \
           -H "Accept: application/vnd.github.v3+json" \
           ${{ steps.globals.outputs.REPO_URL }}/actions/runs?event=repository_dispatch)
+
+        echo "poll runs response='$response'"$'\n'
 
         # Retrieve the run_id, returning the first matching display_title
         run_id=$(echo $response | jq -r '.workflow_runs[] | select(.display_title | contains("${{ steps.unique-run-name.outputs.name }}")) | .id' | head -n 1)
