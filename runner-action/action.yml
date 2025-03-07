@@ -36,21 +36,8 @@ runs:
       shell: bash
       run: |
         OWNER='cdcent'
-        PUBLIC_KEY="-----BEGIN PUBLIC KEY-----
-        MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAli9U3+pvL8lOhbHcAkBa
-        UbhZO4MCwCRxJwMC1tzHMBKcG2SeLv0lFto/QtfAfyamjd/fgyr37p6olMkQB1xr
-        oF9lt/OVUMLhM3F4wz7voYH+SKwMC/H241CHfWN8vnsmFwGVGQVRYKnVbA7pnp9r
-        9JfB6W0S4TNYE/30vOl2z9vZMa+pBY2nqpTH3PvS3JPfcX+bCqlnL2YX8TSiWIWb
-        ubbzJdWpLzKiwziCNFtTNc2+WEuwcSEURLd9NfFSXZPjJXc2rWxkjLdbcCArVwnB
-        aPp1/uwOedARtv3Us/jcP/FrRoQk/DBYrGSPplYzxnl+E780N4LveXxuvkq/Ad2E
-        0QIDAQAB
-        -----END PUBLIC KEY-----"
-
-        # Replace newlines with '\n' and set the output
-        PUBLIC_KEY=$(echo "$PUBLIC_KEY" | sed ':a;N;$!ba;s/\n/\\n/g')
         echo "OWNER=$OWNER" >> "$GITHUB_OUTPUT"
         echo "REPO_URL=https://api.github.com/repos/$OWNER/cfa-cdcgov-actions" >> "$GITHUB_OUTPUT"
-        echo "PUBLIC_KEY=$PUBLIC_KEY" >> "$GITHUB_OUTPUT"
 
     - name: Create GitHub App token
       id: create_token
@@ -71,8 +58,15 @@ runs:
       id: encrypt-script
       run: |
         # replace literal \\n with newlines \n
-        PUBLIC_KEY=$(echo "${{ steps.globals.outputs.PUBLIC_KEY }}" | sed 's/\\n/\n/g') 
-        echo "$PUBLIC_KEY" > public_key.crt
+        PUBLIC_KEY="-----BEGIN PUBLIC KEY-----
+        MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAli9U3+pvL8lOhbHcAkBa
+        UbhZO4MCwCRxJwMC1tzHMBKcG2SeLv0lFto/QtfAfyamjd/fgyr37p6olMkQB1xr
+        oF9lt/OVUMLhM3F4wz7voYH+SKwMC/H241CHfWN8vnsmFwGVGQVRYKnVbA7pnp9r
+        9JfB6W0S4TNYE/30vOl2z9vZMa+pBY2nqpTH3PvS3JPfcX+bCqlnL2YX8TSiWIWb
+        ubbzJdWpLzKiwziCNFtTNc2+WEuwcSEURLd9NfFSXZPjJXc2rWxkjLdbcCArVwnB
+        aPp1/uwOedARtv3Us/jcP/FrRoQk/DBYrGSPplYzxnl+E780N4LveXxuvkq/Ad2E
+        0QIDAQAB
+        -----END PUBLIC KEY-----"
 
         # Generate a 32-byte AES key for AES-256 encryption
         openssl rand -out aes_key.bin 32
@@ -81,7 +75,7 @@ runs:
         ENCRYPTED_SCRIPT=$(echo "${{ inputs.script }}" | openssl enc -pubin -aes-256-cbc -salt -pass file:aes_key.bin | base64)
 
         # encrypt key using RSA public key
-        ENCRYPTED_KEY=$(openssl pkeyutl -encrypt -in aes_key.bin -pubin -inkey public_key.crt | base64)
+        ENCRYPTED_KEY=$(openssl pkeyutl -encrypt -in aes_key.bin -pubin -inkey <(echo "$PUBLIC_KEY") | base64)
 
         echo "script=$ENCRYPTED_SCRIPT" >> "$GITHUB_OUTPUT"
         echo "key=$ENCRYPTED_KEY" >> "$GITHUB_OUTPUT"
