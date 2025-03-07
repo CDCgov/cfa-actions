@@ -105,6 +105,7 @@ runs:
       run: |
         MAX_RETRIES=20
         RETRY_INTERVAL=15
+        GITHUB_TOKEN='${{ steps.create_token.outputs.token }}'
         # Wait for a few seconds to ensure the workflow run is created
         sleep 10
 
@@ -157,6 +158,8 @@ runs:
       shell: bash
       if: ${{ inputs.print_logs == 'true' }}
       run: |
+
+        GITHUB_TOKEN='${{ steps.create_token.outputs.token }}'
         # Retrieve the logs for the specified run_id
         logs_url="${{ steps.globals.outputs.REPO_URL }}/actions/runs/$run_id/logs"
         echo "Fetching logs from: $logs_url"
