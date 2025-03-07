@@ -81,8 +81,19 @@ runs:
         ENCRYPTED_KEY=$(openssl pkeyutl -encrypt -in aes_key.bin -pubin -inkey <(echo "$PUBLIC_KEY") | base64)
         echo "Encrypted AES key"$'\n'
 
-        echo "script=$ENCRYPTED_SCRIPT" >> "$GITHUB_OUTPUT"
-        echo "key=$ENCRYPTED_KEY" >> "$GITHUB_OUTPUT"
+        # adding encrypted script to step output
+        EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+        echo "script<<$EOF" >> "$GITHUB_OUTPUT"
+        echo "$ENCRYPTED_SCRIPT" >> "$GITHUB_OUTPUT"
+        echo "$EOF" >> "$GITHUB_OUTPUT"
+        echo "Added script to output"$'\n'
+
+        # adding encrypted key to step output
+        EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+        echo "key<<$EOF" >> "$GITHUB_OUTPUT"
+        echo "$ENCRYPTED_KEY" >> "$GITHUB_OUTPUT"
+        echo "$EOF" >> "$GITHUB_OUTPUT"
+        echo "Added key to output"$'\n'
 
 
     - name: Dispatch Encrypted Script
