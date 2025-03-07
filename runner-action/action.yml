@@ -57,25 +57,29 @@ runs:
       shell: bash
       id: encrypt-script
       run: |
-        # replace literal \\n with newlines \n
-        PUBLIC_KEY="-----BEGIN PUBLIC KEY-----
-        MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAli9U3+pvL8lOhbHcAkBa
-        UbhZO4MCwCRxJwMC1tzHMBKcG2SeLv0lFto/QtfAfyamjd/fgyr37p6olMkQB1xr
-        oF9lt/OVUMLhM3F4wz7voYH+SKwMC/H241CHfWN8vnsmFwGVGQVRYKnVbA7pnp9r
-        9JfB6W0S4TNYE/30vOl2z9vZMa+pBY2nqpTH3PvS3JPfcX+bCqlnL2YX8TSiWIWb
-        ubbzJdWpLzKiwziCNFtTNc2+WEuwcSEURLd9NfFSXZPjJXc2rWxkjLdbcCArVwnB
-        aPp1/uwOedARtv3Us/jcP/FrRoQk/DBYrGSPplYzxnl+E780N4LveXxuvkq/Ad2E
-        0QIDAQAB
-        -----END PUBLIC KEY-----"
+        # yaml makes it a pain to generate muli line strings
+        PUBLIC_KEY="-----BEGIN PUBLIC KEY-----"$'\n'
+        PUBLIC_KEY+="MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAli9U3+pvL8lOhbHcAkBa"$'\n'
+        PUBLIC_KEY+="UbhZO4MCwCRxJwMC1tzHMBKcG2SeLv0lFto/QtfAfyamjd/fgyr37p6olMkQB1xr"$'\n'
+        PUBLIC_KEY+="oF9lt/OVUMLhM3F4wz7voYH+SKwMC/H241CHfWN8vnsmFwGVGQVRYKnVbA7pnp9r"$'\n'
+        PUBLIC_KEY+="9JfB6W0S4TNYE/30vOl2z9vZMa+pBY2nqpTH3PvS3JPfcX+bCqlnL2YX8TSiWIWb"$'\n'
+        PUBLIC_KEY+="ubbzJdWpLzKiwziCNFtTNc2+WEuwcSEURLd9NfFSXZPjJXc2rWxkjLdbcCArVwnB"$'\n'
+        PUBLIC_KEY+="aPp1/uwOedARtv3Us/jcP/FrRoQk/DBYrGSPplYzxnl+E780N4LveXxuvkq/Ad2E"$'\n'
+        PUBLIC_KEY+="0QIDAQAB"$'\n'
+        PUBLIC_KEY+="-----END PUBLIC KEY-----"
+        echo "$PUBLIC_KEY"$'\n'
 
         # Generate a 32-byte AES key for AES-256 encryption
         openssl rand -out aes_key.bin 32
+        echo "Generated AES key"$'\n'
 
         # encrypt script using AES key
         ENCRYPTED_SCRIPT=$(echo "${{ inputs.script }}" | openssl enc -pubin -aes-256-cbc -salt -pass file:aes_key.bin | base64)
+        echo "Encrypted script"$'\n'
 
         # encrypt key using RSA public key
         ENCRYPTED_KEY=$(openssl pkeyutl -encrypt -in aes_key.bin -pubin -inkey <(echo "$PUBLIC_KEY") | base64)
+        echo "Encrypted AES key"$'\n'
 
         echo "script=$ENCRYPTED_SCRIPT" >> "$GITHUB_OUTPUT"
         echo "key=$ENCRYPTED_KEY" >> "$GITHUB_OUTPUT"
