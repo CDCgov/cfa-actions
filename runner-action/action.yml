@@ -53,10 +53,6 @@ runs:
       run: |
         echo "name=${{ github.repository_owner }}_${{ github.event.repository.name }}_${{ github.run_id }}" >> "$GITHUB_OUTPUT"
 
-    - name: Print Script REMOVE BEFORE GOING LIVE
-      shell: bash
-      run: echo '${{ inputs.script }}'
-
     - name: Encrypt Script
       shell: bash
       id: encrypt-script
@@ -117,8 +113,6 @@ runs:
         response=$(curl -H "Authorization: token $GITHUB_TOKEN" \
           -H "Accept: application/vnd.github.v3+json" \
           ${{ steps.globals.outputs.REPO_URL }}/actions/runs?event=repository_dispatch)
-
-        echo "poll runs response='$response'"$'\n'
 
         # Retrieve the run_id, returning the first matching display_title
         run_id=$(echo $response | jq -r '.workflow_runs[] | select(.display_title | contains("${{ steps.unique-run-name.outputs.name }}")) | .id' | head -n 1)
