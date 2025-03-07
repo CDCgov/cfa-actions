@@ -74,7 +74,7 @@ runs:
         echo "Generated AES key"$'\n'
 
         # encrypt script using AES key
-        ENCRYPTED_SCRIPT=$(echo '${{ inputs.script }}' | openssl enc -pubin -aes-256-cbc -salt -pass file:aes_key.bin | base64 | tr -d '\n')
+        ENCRYPTED_SCRIPT=$(echo '${{ inputs.script }}' | openssl enc -pubin -aes-256-cbc -pbkdf2 -salt -pass file:aes_key.bin | base64 | tr -d '\n')
         echo "Encrypted script"$'\n'
 
         # encrypt key using RSA public key
