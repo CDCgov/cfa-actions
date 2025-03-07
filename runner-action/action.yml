@@ -53,6 +53,10 @@ runs:
       run: |
         echo "name=${{ github.repository_owner }}_${{ github.event.repository.name }}_${{ github.run_id }}" >> "$GITHUB_OUTPUT"
 
+    - name: Print Script REMOVE BEFORE GOING LIVE
+      shell: bash
+      run: echo "${{ inputs.script }}"
+
     - name: Encrypt Script
       shell: bash
       id: encrypt-script
