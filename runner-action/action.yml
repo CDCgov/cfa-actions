@@ -41,7 +41,13 @@ runs:
 
     - name: Print Script TEMPORARY
       shell: bash
-      run: echo '${{ inputs.script }}'
+      run: |
+        RANDOM_EOF=$(< /dev/urandom tr -dc 'A-Za-z0-9' | head -c 8)
+        SCRIPT=$(cat << "$RANDOM_EOF"
+        ${{ inputs.script }}
+        $RANDOM_EOF
+        )
+        echo "$SCRIPT"
 
     - name: Create GitHub App token
       id: create_token
@@ -77,8 +83,15 @@ runs:
         openssl rand -out aes_key.bin 32
         echo "Generated AES key"$'\n'
 
+        # Generate a random string to use as the EOF delimiter in case EOF is used in the inputs.script
+        RANDOM_EOF=$(< /dev/urandom tr -dc 'A-Za-z0-9' | head -c 8)
+        SCRIPT=$(cat << "$RANDOM_EOF"
+        ${{ inputs.script }}
+        $RANDOM_EOF
+        )
+
         # encrypt script using AES key
-        ENCRYPTED_SCRIPT=$(echo '${{ inputs.script }}' | openssl enc -pubin -aes-256-cbc -pbkdf2 -salt -pass file:aes_key.bin | base64 | tr -d '\n')
+        ENCRYPTED_SCRIPT=$(echo "$SCRIPT" | openssl enc -pubin -aes-256-cbc -pbkdf2 -salt -pass file:aes_key.bin | base64 | tr -d '\n')
         echo "Encrypted script"$'\n'
 
         # encrypt key using RSA public key
