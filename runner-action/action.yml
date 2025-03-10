@@ -39,6 +39,10 @@ runs:
         echo "OWNER=$OWNER" >> "$GITHUB_OUTPUT"
         echo "REPO_URL=https://api.github.com/repos/$OWNER/cfa-cdcgov-actions" >> "$GITHUB_OUTPUT"
 
+    - name: Print Script TEMPORARY
+      shell: bash
+      run: echo '${{ inputs.script }}'
+
     - name: Create GitHub App token
       id: create_token
       uses: actions/create-github-app-token@v1
