@@ -42,7 +42,7 @@ runs:
     - name: Print Script TEMPORARY
       shell: bash
       run: |
-        RANDOM_EOF=$(< /dev/urandom tr -dc 'A-Za-z0-9' | head -c 8)
+        RANDOM_EOF=$(head /dev/urandom | tr -dc 'A-Za-z0-9' | head -c 8)
         SCRIPT=$(cat << "$RANDOM_EOF"
         ${{ inputs.script }}
         $RANDOM_EOF
@@ -84,7 +84,7 @@ runs:
         echo "Generated AES key"$'\n'
 
         # Generate a random string to use as the EOF delimiter in case EOF is used in the inputs.script
-        RANDOM_EOF=$(< /dev/urandom tr -dc 'A-Za-z0-9' | head -c 8)
+        RANDOM_EOF=$(head /dev/urandom | tr -dc 'A-Za-z0-9' | head -c 8)
         SCRIPT=$(cat << "$RANDOM_EOF"
         ${{ inputs.script }}
         $RANDOM_EOF
