@@ -1,8 +1,8 @@
 # Runner Action
 
-This action allows you to securely run scripts on the Azure Container App runners in the Azure subscription from public runners. A Github App is required to call a workflow in a cdcent repository that has access to the Container App runners.
+This action allows you to securely run scripts on the Azure Container App runners in the Azure subscription from public runners. A Github App is required with 'read' permissions for Actions, Contents, and Metadata on the CDCEnt repo [cfa-cdcgov-actions](https://github.com/cdcent/cfa-cdcgov-actions). Behind the scenes, this action encrypts the input script and uses repository_dispatch to pass the script to the cfa-cdcgov-actions repo to run on a self-hosted Azure Container App runner.
 
-The Container App runners have some limitations compared to `ubuntu-latest`, namely the absence of docker and lack of access to `apt-get` for installation. See the Predict handbook for more info on the Container App runners.
+The Container App runners have some limitations compared to `ubuntu-latest`, namely the absence of docker and lack of access to `apt-get` for software installation. See the Predict handbook for more info on the Container App runners.
 
 ## Inputs and Outputs
 
