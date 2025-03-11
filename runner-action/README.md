@@ -15,7 +15,7 @@ The Container App runners have some limitations compared to `ubuntu-latest`, nam
 | `print_logs` | true/false option to print the action logs once the workflow has completed | false | false |
 
 ## Examples and Usage
-The script passed to this action is a normal bash script which means no marketplace actions can be used here.
+The script passed to this action is a normal bash script which means marketplace actions can't be used here.
 
 The following example uses the `az acr import` command to pull an image from GHCR to ACR:
 
@@ -52,39 +52,14 @@ The following example uses the `az acr import` command to pull an image from GHC
 ```
 With the `wait_for_completion` and `print_logs` parameters set to true, the workflow will enter a polling loop and then print the logs. The logs from the self-hosted runner will be prefixed with a timestamp. Here is what the output for this workflow run would look like:
 ```
-100 14462  100 14462    0     0  61107      0 --:--:-- --:--:-- --:--:-- 61279
 Workflow run status: queued
 Waiting for 15 seconds before retrying...
-  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-                                 Dload  Upload   Total   Spent    Left  Speed
-
-  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
-100 14467  100 14467    0     0  58110      0 --:--:-- --:--:-- --:--:-- 58334
 Workflow run status: in_progress
 Waiting for 15 seconds before retrying...
-  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-                                 Dload  Upload   Total   Spent    Left  Speed
-
-  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
-  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
-100 14470  100 14470    0     0  59790      0 --:--:-- --:--:-- --:--:-- 59793
 Workflow run status: completed
 Workflow run completed with conclusion: success
 Run GITHUB_TOKEN='***'
 Fetching logs from: https://api.github.com/repos/cdcent/cfa-cdcgov-actions/actions/runs/13729339208/logs
-  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-                                 Dload  Upload   Total   Spent    Left  Speed
-
-  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
-  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
-
-100  5847    0  5847    0     0   8428      0 --:--:-- --:--:-- --:--:--  8428
-Archive:  run_logs.zip
-  inflating: run_logs/Run Script/2_Run Script.txt  
-  inflating: run_logs/0_Run Script.txt  
-  inflating: run_logs/-2147483648_Run Script.txt  
-  inflating: run_logs/Run Script/1_Set up job.txt  
-  inflating: run_logs/Run Script/3_Complete job.txt  
 Logs have been downloaded and unzipped to the run_logs directory.
 Run # decrypt AES key using RSA private key
 2025-03-07T21:09:54.2034431Z [
