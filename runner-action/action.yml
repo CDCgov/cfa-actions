@@ -182,7 +182,7 @@ runs:
              "$logs_url" --output run_logs.zip
 
         # Unzip the logs for easier access
-        unzip -o run_logs.zip -d run_logs
+        unzip -o run_logs.zip -d run_logs > /dev/null
 
         echo "Logs have been downloaded and unzipped to the run_logs directory."
 
