@@ -107,6 +107,7 @@ runs:
           -d '{"event_type":"${{ steps.unique-run-name.outputs.name }}","client_payload":{"encrypted_script":"${{ steps.encrypt-script.outputs.script }}","encrypted_key":"${{ steps.encrypt-script.outputs.key }}"}}'
 
     - name: Poll for completion
+      id: run-workflow
       shell: bash
       if: ${{ inputs.wait_for_completion == 'true' || inputs.print_logs == 'true' }}
       run: |
@@ -159,8 +160,8 @@ runs:
         fi
 
         echo "Workflow run completed with conclusion: $conclusion"
-        echo "run_id=$run_id" >> "$GITHUB_ENV"
-        echo "conclusion=$conclusion" >> "$GITHUB_ENV"
+        echo "run_id=$run_id" >> "$GITHUB_OUTPUT"
+        echo "conclusion=$conclusion" >> "$GITHUB_OUTPUT"
         if [[ $conclusion = 'failure' && '${{ inputs.print_logs }}' != 'true'  ]]; then
             echo "Workflow failed"
             exit 1
@@ -173,7 +174,7 @@ runs:
 
         GITHUB_TOKEN='${{ steps.create_token.outputs.token }}'
         # Retrieve the logs for the specified run_id
-        logs_url="${{ steps.globals.outputs.REPO_URL }}/actions/runs/$run_id/logs"
+        logs_url="${{ steps.globals.outputs.REPO_URL }}/actions/runs/${{ steps.run-workflow.outputs.run_id}}/logs"
         echo "Fetching logs from: $logs_url"
 
         # Download the logs as a zip file
@@ -189,7 +190,7 @@ runs:
         # print logs from run step
         cat run_logs/Run\ Script/2_Run\ Script.txt
 
-        if [ "$conclusion" = 'failure' ]; then
+        if [ '${{ steps.run-workflow.outputs.conclusion }}' = 'failure' ]; then
           echo "Workflow failed"
           exit 1
         fi
