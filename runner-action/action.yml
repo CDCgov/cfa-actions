@@ -100,7 +100,7 @@ runs:
     - name: Dispatch Encrypted Script
       shell: bash
       run: |
-        curl -X POST \
+        curl -s -X POST \
           -H "Authorization: token ${{ steps.create_token.outputs.token }}" \
           -H "Accept: application/vnd.github.v3+json" \
           ${{ steps.globals.outputs.REPO_URL }}/dispatches \
@@ -180,7 +180,7 @@ runs:
         echo "Fetching logs from: $logs_url"
 
         # Download the logs as a zip file
-        curl -L -H "Authorization: token $GITHUB_TOKEN" \
+        curl -s -L -H "Authorization: token $GITHUB_TOKEN" \
              -H "Accept: application/vnd.github.v3+json" \
              "$logs_url" --output run_logs.zip
 
