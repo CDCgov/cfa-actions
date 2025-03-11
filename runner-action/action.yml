@@ -171,7 +171,7 @@ runs:
 
     - name: Get Logs
       shell: bash
-      if: ${{ inputs.print_logs == 'true' }} || ${{ env.workflow_status == 'failed' }}
+      if: ${{ inputs.print_logs == 'true' }} || failed() && ${{ env.workflow_status == 'failed' }}
       run: |
 
         GITHUB_TOKEN='${{ steps.create_token.outputs.token }}'
