@@ -117,7 +117,7 @@ runs:
         sleep 10
 
         # List workflow runs and filter by unique identifier
-        response=$(curl -H "Authorization: token $GITHUB_TOKEN" \
+        response=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
           -H "Accept: application/vnd.github.v3+json" \
           ${{ steps.globals.outputs.REPO_URL }}/actions/runs?event=repository_dispatch)
 
@@ -137,7 +137,7 @@ runs:
         retries=0
         while [[ "$status" != "completed" && $retries -lt $MAX_RETRIES ]]; do
           # Get the current status of the workflow run
-          run_status=$(curl -H "Authorization: token $GITHUB_TOKEN" \
+          run_status=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
             -H "Accept: application/vnd.github.v3+json" \
             "${{ steps.globals.outputs.REPO_URL }}/actions/runs/$run_id")
 
@@ -168,7 +168,7 @@ runs:
 
     - name: Get Logs
       shell: bash
-      if: ${{ inputs.print_logs == 'true' }} || ${{ env.conclusion == 'failure' }}
+      if: ${{ inputs.print_logs == 'true' }}
       run: |
 
         GITHUB_TOKEN='${{ steps.create_token.outputs.token }}'
