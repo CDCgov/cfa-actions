@@ -109,7 +109,6 @@ runs:
     - name: Poll for completion
       shell: bash
       if: ${{ inputs.wait_for_completion == 'true' || inputs.print_logs == 'true' }}
-      continue-on-error: true
       run: |
         MAX_RETRIES=20
         RETRY_INTERVAL=15
@@ -162,13 +161,17 @@ runs:
         echo "Workflow run completed with conclusion: $conclusion"
         echo "run_id=$run_id" >> "$GITHUB_ENV"
         if [ "$conclusion" == "failed" ]; then
-          echo "Workflow failed"
-          exit 1
+          if [ "${{ input.print_logs }}" != 'true' ]; then
+            echo "Workflow failed"
+            exit 1
+          else
+            echo "workflow_status='failed'" >> "$GITHUB_ENV"
+          fi
         fi
 
     - name: Get Logs
       shell: bash
-      if: ${{ inputs.print_logs == 'true' }}
+      if: ${{ inputs.print_logs == 'true' }} || ${{ env.workflow_status == 'failed' }}
       run: |
 
         GITHUB_TOKEN='${{ steps.create_token.outputs.token }}'
@@ -188,4 +191,9 @@ runs:
 
         # print logs from run step
         cat run_logs/Run\ Script/2_Run\ Script.txt
+
+        if [ "$workflow_status" == 'failed' ]; then
+          echo "Workflow failed"
+          exit 1
+        fi
 
