@@ -189,7 +189,7 @@ runs:
         # print logs from run step
         cat run_logs/Run\ Script/2_Run\ Script.txt
 
-        if [ '${{ env.conclusion }}' = 'failed' ]; then
+        if [ "$conclusion" = 'failure' ]; then
           echo "Workflow failed"
           exit 1
         fi
