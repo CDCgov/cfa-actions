@@ -161,7 +161,7 @@ runs:
         echo "Workflow run completed with conclusion: $conclusion"
         echo "run_id=$run_id" >> "$GITHUB_ENV"
         if [ "$conclusion" == "failed" ]; then
-          if [ "${{ input.print_logs }}" != 'true' ]; then
+          if [ "${{ inputs.print_logs }}" != 'true' ]; then
             echo "Workflow failed"
             exit 1
           else
