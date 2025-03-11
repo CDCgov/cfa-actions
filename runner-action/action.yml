@@ -160,18 +160,15 @@ runs:
 
         echo "Workflow run completed with conclusion: $conclusion"
         echo "run_id=$run_id" >> "$GITHUB_ENV"
-        if [ "$conclusion" == "failed" ]; then
-          if [ "${{ inputs.print_logs }}" != 'true' ]; then
+        echo "conclusion=$conclusion" >> "$GITHUB_ENV"
+        if [[ $conclusion = 'failure' && '${{ inputs.print_logs }}' != 'true'  ]]; then
             echo "Workflow failed"
             exit 1
-          else
-            echo "workflow_status='failed'" >> "$GITHUB_ENV"
-          fi
         fi
 
     - name: Get Logs
       shell: bash
-      if: ${{ inputs.print_logs == 'true' }} || failed() && ${{ env.workflow_status == 'failed' }}
+      if: ${{ inputs.print_logs == 'true' }} || ${{ env.conclusion == 'failure' }}
       run: |
 
         GITHUB_TOKEN='${{ steps.create_token.outputs.token }}'
@@ -192,7 +189,7 @@ runs:
         # print logs from run step
         cat run_logs/Run\ Script/2_Run\ Script.txt
 
-        if [ "$workflow_status" == 'failed' ]; then
+        if [ '${{ env.conclusion }}' = 'failed' ]; then
           echo "Workflow failed"
           exit 1
         fi
