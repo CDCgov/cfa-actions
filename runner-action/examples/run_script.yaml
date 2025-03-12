@@ -1,4 +1,4 @@
-name: Building the container and put it on ghcr.io
+name: Running a script from the repo
 
 on:
   pull_request:
