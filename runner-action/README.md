@@ -1,8 +1,35 @@
 # Runner Action
 
+> [!IMPORTANT] > This action is intended for internal use. This action will not work if you use it in a repository outside of [CDCgov](https://github.com/CDCgov) or [CDCent](https://github.com/cdcent).
+
 This action allows you to securely run scripts on the Azure Container App runners in the Azure subscription from public runners. A Github App is required with 'read' permissions for Actions, Contents, and Metadata on the CDCEnt repo [cfa-cdcgov-actions](https://github.com/cdcent/cfa-cdcgov-actions). Behind the scenes, this action encrypts the input script and uses repository_dispatch to pass the script to the cfa-cdcgov-actions repo to run on a self-hosted Azure Container App runner.
 
-The Container App runners have some limitations compared to `ubuntu-latest`, namely the absence of docker and lack of access to `apt-get` for software installation. See the Predict handbook for more info on the Container App runners.
+```mermaid
+sequenceDiagram
+    participant Runner as 'cdcgov/cfa-actions/runner-action'
+    participant Receiver as 'cdcent/cfa-cdcgov-actions'
+
+    Runner->>Runner: Generate AES Key
+    Runner->>Runner: Encrypt Script with AES Key
+    Runner->>Receiver: Send Encrypted Script and AES Key
+    Receiver->>Receiver: Decrypt AES Key with Private Key
+    Receiver->>Receiver: Decrypt Script with AES Key
+    Receiver->>Receiver: Run Script
+
+    alt inputs.wait_for_completion == true
+        loop Polling
+            Runner->>Receiver: Check Status
+            Receiver->>Runner: Return Status
+        end
+    end
+    alt inputs.print_logs == true
+        Runner->>Receiver: Get Logs
+        Receiver->>Runner: Return Logs
+        Runner->>Runner: Print Logs
+    end
+```
+
+The Container App runners have some limitations compared to `ubuntu-latest`, namely the absence of docker and lack of access to `apt-get` for software installation. See the Predict handbook for more info on the [Container App runners](https://github.com/cdcent/cfa-predict-handbook/blob/main/docs/vap-5-Github-actions_runners.md).
 
 ## Inputs and Outputs
 
@@ -65,19 +92,19 @@ Run # decrypt AES key using RSA private key
 2025-03-07T21:09:54.2034431Z [
 2025-03-07T21:09:54.2040343Z   ***
 2025-03-07T21:09:54.2041331Z     "cloudName": "AzureCloud",
-2025-03-07T21:09:54.2042427Z     "homeTenantId": "48aa478c-32b6-4e41-babc-cc13a9c9b986",
-2025-03-07T21:09:54.2047074Z     "id": "ef340bd6-2809-4635-b18b-7e6583a8803b",
+2025-03-07T21:09:54.2042427Z     "homeTenantId": "<redacted>",
+2025-03-07T21:09:54.2047074Z     "id": "<redacted>",
 2025-03-07T21:09:54.2053012Z     "isDefault": true,
 2025-03-07T21:09:54.2053992Z     "managedByTenants": [
 2025-03-07T21:09:54.2054822Z       ***
-2025-03-07T21:09:54.2055691Z         "tenantId": "2f4a9838-26b7-47ee-be60-ccc1fdec5953"
+2025-03-07T21:09:54.2055691Z         "tenantId": "<redacted>"
 2025-03-07T21:09:54.2056638Z       ***
 2025-03-07T21:09:54.2057360Z     ],
 2025-03-07T21:09:54.2058150Z     "name": "EXT-EDAV-CFA-PRD",
 2025-03-07T21:09:54.2059013Z     "state": "Enabled",
-2025-03-07T21:09:54.2059963Z     "tenantId": "48aa478c-32b6-4e41-babc-cc13a9c9b986",
+2025-03-07T21:09:54.2059963Z     "tenantId": "<redacted>",
 2025-03-07T21:09:54.2061020Z     "user": ***
-2025-03-07T21:09:54.2061893Z       "name": "84181eed-46c4-49ba-b539-f688ce7c3562",
+2025-03-07T21:09:54.2061893Z       "name": "<redacted>",
 2025-03-07T21:09:54.2062871Z       "type": "servicePrincipal"
 2025-03-07T21:09:54.2063699Z     ***
 2025-03-07T21:09:54.2064406Z   ***

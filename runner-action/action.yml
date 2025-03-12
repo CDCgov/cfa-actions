@@ -26,6 +26,14 @@ inputs:
     description: true/false to print the action logs once the workflow has completed
     required: false
     default: false
+  max_retries:
+    description: integer with max number of retries when using wait_for_completion or print_logs. Default=20
+    required: false
+    default: 20
+  retry_interval:
+    description: integer representing the number of seconds between retries. Default=15
+    required: false
+    default: 15
 
 runs:
   using: "composite"
@@ -111,8 +119,8 @@ runs:
       shell: bash
       if: ${{ inputs.wait_for_completion == 'true' || inputs.print_logs == 'true' }}
       run: |
-        MAX_RETRIES=20
-        RETRY_INTERVAL=15
+        MAX_RETRIES=${{ inputs.max_retries }}
+        RETRY_INTERVAL=${{ inputs.retry_interval }}
         GITHUB_TOKEN='${{ steps.create_token.outputs.token }}'
         # Wait for a few seconds to ensure the workflow run is created
         sleep 10
