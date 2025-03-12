@@ -1,0 +1,43 @@
+name: Building the container and put it on ghcr.io
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        name: Checkout code
+
+      - name: Get current branch
+        id: get-branch
+        run: |
+          CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+          echo "CURRENT_BRANCH=$CURRENT_BRANCH" >> "$GITHUB_OUTPUT"
+
+      - name: Run Script
+        uses: ./runner_action
+        with:
+          # GitHub app with access to cdcent/cfa-cdcgov-actions
+          github_app_id: ${{ secrets.CDCENT_ACTOR_APP_ID }}
+          github_app_pem: ${{ secrets.CDCENT_ACTOR_APP_PEM }}
+          wait_for_completion: true
+          print_logs: true
+          script: |
+            CURRENT_BRANCH="${{ steps.get-branch.outputs.CURRENT_BRANCH }}"
+            echo "CURRENT_BRANCH='$CURRENT_BRANCH'"
+
+            echo "Cloning repo at branch '$CURRENT_BRANCH'"
+            git clone -b "$CURRENT_BRANCH" https://github.com/${{ github.repository }}.git
+
+            cd cfa-actions/runner-action/examples/
+
+            chmod +x hello_world.sh
+            ./hello_world.sh
+

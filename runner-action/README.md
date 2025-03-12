@@ -1,8 +1,12 @@
 # Runner Action
 
-> [!IMPORTANT] > This action is intended for internal use. This action will not work if you use it in a repository outside of [CDCgov](https://github.com/CDCgov) or [CDCent](https://github.com/cdcent).
+> [!IMPORTANT] 
+> This action is intended for internal use. This action will not work if you use it in a repository outside of [CDCgov](https://github.com/CDCgov) or [CDCent](https://github.com/cdcent).
 
-This action allows you to securely run scripts on the Azure Container App runners in the Azure subscription from public runners. A Github App is required with 'read' permissions for Actions, Contents, and Metadata on the CDCEnt repo [cfa-cdcgov-actions](https://github.com/cdcent/cfa-cdcgov-actions). Behind the scenes, this action encrypts the input script and uses repository_dispatch to pass the script to the cfa-cdcgov-actions repo to run on a self-hosted Azure Container App runner.
+This action allows you to securely run scripts on the Azure Container App runners in the Azure subscription from public runners. A Github App is required with 'read' permissions for Actions, Contents, and Metadata on the CDCEnt repo [cfa-cdcgov-actions](https://github.com/cdcent/cfa-cdcgov-actions).
+If you do not have a GitHub App, you can find an [app id](https://portal.azure.com/#view/Microsoft_Azure_KeyVault/ListObjectVersionsRBACBlade/~/overview/objectType/secrets/objectId/https%3A%2F%2Fcfa-predict.vault.azure.net%2Fsecrets%2Fcfa-cdcgov-actions-app-id/vaultResourceUri/%2Fsubscriptions%2Fef340bd6-2809-4635-b18b-7e6583a8803b%2FresourceGroups%2FEXT-EDAV-CFA-PRD%2Fproviders%2FMicrosoft.KeyVault%2Fvaults%2FCFA-Predict/vaultId/%2Fsubscriptions%2Fef340bd6-2809-4635-b18b-7e6583a8803b%2FresourceGroups%2Fext-edav-cfa-prd%2Fproviders%2FMicrosoft.KeyVault%2Fvaults%2FCFA-Predict) and [pem](https://portal.azure.com/#view/Microsoft_Azure_KeyVault/ListObjectVersionsRBACBlade/~/overview/objectType/secrets/objectId/https%3A%2F%2Fcfa-predict.vault.azure.net%2Fsecrets%2Fcfa-cdcgov-actions-private-key/vaultResourceUri/%2Fsubscriptions%2Fef340bd6-2809-4635-b18b-7e6583a8803b%2FresourceGroups%2FEXT-EDAV-CFA-PRD%2Fproviders%2FMicrosoft.KeyVault%2Fvaults%2FCFA-Predict/vaultId/%2Fsubscriptions%2Fef340bd6-2809-4635-b18b-7e6583a8803b%2FresourceGroups%2Fext-edav-cfa-prd%2Fproviders%2FMicrosoft.KeyVault%2Fvaults%2FCFA-Predict) in the CFA Predict Key Vault.
+
+Behind the scenes, this action encrypts the input script and uses repository_dispatch to pass the script to the cfa-cdcgov-actions repo to run on a self-hosted Azure Container App runner.
 
 ```mermaid
 sequenceDiagram
@@ -40,6 +44,8 @@ The Container App runners have some limitations compared to `ubuntu-latest`, nam
 | `script` | A bash script to be run on the Azure self-hosted runner | true | |
 | `wait_for_completion` | true/false option to wait for the dispatched workflow to complete | false | false |
 | `print_logs` | true/false option to print the action logs once the workflow has completed | false | false |
+| `max_retries` | integer with max number of retries when using wait_for_completion or print_logs | false | 20 |
+| `retry_interval` | integer representing the number of seconds between retries | false | 15 |
 
 ## Examples and Usage
 The script passed to this action is a normal bash script which means marketplace actions can't be used here.
@@ -112,4 +118,24 @@ Run # decrypt AES key using RSA private key
 2025-03-07T21:09:54.8360735Z WARNING: The login server endpoint suffix '.azurecr.io' is automatically omitted.
 2025-03-07T21:10:06.2097970Z Copied image!
 ```
+If you have existing scripts in your repository, you can access them by using `git clone` in your script:
+```yaml
+  run-script:
+    name: Run a script from the repo
+    runs-on: ubuntu-latest
+    steps:
+    - name: Run Script
+      uses: CDCgov/cfa-actions/runner-action@1.0.0 # check cfa-actions repo for latest tag
+      with:
+        github_app_id: ${{ secrets.CDCENT_ACTOR_APP_ID }}
+        github_app_pem: ${{ secrets.CDCENT_ACTOR_APP_PEM }}
+        wait_for_completion: true
+        print_logs: true
+        script: |
+          git clone https://github.com/${{ github.repository }}.git
 
+          cd repo-name
+
+          chmod +x hello_world.sh
+          ./hello_world.sh
+``` 
