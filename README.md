@@ -11,6 +11,7 @@ This repo contains personalized actions designed by CDC's CFA team. Please use w
 
 - [post-artifact](./post-artifact): Post an artifact as a comment in a PR. Useful when you need to easily access a built element during a workflow such as a website, a report, etc.
 - [twostep-container-build](./twostep-container-build): Cache dependencies of a project by splitting the build process in two steps. The first step builds the dependencies and caches the image. The second step builds the project using the cached image as a base.
+- [runner-action](./runner-action): Run a bash script on an Azure Container App runner in the Azure Ext subscription
   
 
 ## Public Domain Standard Notice

@@ -1,0 +1,205 @@
+name: runner-action
+description: |
+  This action allows cdcgov repos to run a script on a self-hosted
+  runner in the Azure Ext subscription. The script is encrypted before
+  being sent over the network, so it is safe to use secrets. Check
+  the Predict Handbook for [runner limitations](https://github.com/cdcent/cfa-predict-handbook/blob/main/docs/vap-5-Github-actions_runners.md)
+  
+inputs:
+  github_app_id:
+    description: |
+      A GitHub App ID installed on CDCEnt
+    required: true
+  github_app_pem: 
+    description: |
+      The PEM-encoded string for the GitHub App
+    required: true
+  script:
+    description: |
+      A bash script to be run on the Azure self-hosted runner
+    required: true
+  wait_for_completion:
+    description: true/false to wait for the dispatched workflow to complete
+    required: false
+    default: false
+  print_logs:
+    description: true/false to print the action logs once the workflow has completed
+    required: false
+    default: false
+  max_retries:
+    description: integer with max number of retries when using wait_for_completion or print_logs. Default=20
+    required: false
+    default: 20
+  retry_interval:
+    description: integer representing the number of seconds between retries. Default=15
+    required: false
+    default: 15
+
+runs:
+  using: "composite"
+  steps:
+  
+    - name: Set globals
+      id: globals
+      shell: bash
+      run: |
+        OWNER='cdcent'
+        echo "OWNER=$OWNER" >> "$GITHUB_OUTPUT"
+        echo "REPO_URL=https://api.github.com/repos/$OWNER/cfa-cdcgov-actions" >> "$GITHUB_OUTPUT"
+
+    - name: Create GitHub App token
+      id: create_token
+      uses: actions/create-github-app-token@v1
+      with:
+        app-id: ${{ inputs.github_app_id }}
+        private-key: ${{ inputs.github_app_pem }}
+        owner: ${{ steps.globals.outputs.OWNER }}
+
+    - name: Generate Unique Run Name
+      shell: bash
+      id: unique-run-name
+      run: |
+        echo "name=${{ github.repository_owner }}_${{ github.event.repository.name }}_${{ github.run_id }}" >> "$GITHUB_OUTPUT"
+
+    - name: Encrypt Script
+      shell: bash
+      id: encrypt-script
+      run: |
+
+        PUBLIC_KEY="-----BEGIN PUBLIC KEY-----
+        MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAli9U3+pvL8lOhbHcAkBa
+        UbhZO4MCwCRxJwMC1tzHMBKcG2SeLv0lFto/QtfAfyamjd/fgyr37p6olMkQB1xr
+        oF9lt/OVUMLhM3F4wz7voYH+SKwMC/H241CHfWN8vnsmFwGVGQVRYKnVbA7pnp9r
+        9JfB6W0S4TNYE/30vOl2z9vZMa+pBY2nqpTH3PvS3JPfcX+bCqlnL2YX8TSiWIWb
+        ubbzJdWpLzKiwziCNFtTNc2+WEuwcSEURLd9NfFSXZPjJXc2rWxkjLdbcCArVwnB
+        aPp1/uwOedARtv3Us/jcP/FrRoQk/DBYrGSPplYzxnl+E780N4LveXxuvkq/Ad2E
+        0QIDAQAB
+        -----END PUBLIC KEY-----"
+        echo "$PUBLIC_KEY"$'\n'
+
+        # Generate a 32-byte AES key for AES-256 encryption
+        openssl rand -out aes_key.bin 32
+        echo "Generated AES key"$'\n'
+
+        # Generate a random string to use as the EOF delimiter in case EOF is used in the inputs.script
+        RANDOM_EOF=$(head /dev/urandom | tr -dc 'A-Za-z0-9' | head -c 8)
+        SCRIPT=$(cat << "$RANDOM_EOF"
+        ${{ inputs.script }}
+        $RANDOM_EOF
+        )
+
+        # encrypt script using AES key
+        ENCRYPTED_SCRIPT=$(echo "$SCRIPT" | openssl enc -pubin -aes-256-cbc -pbkdf2 -salt -pass file:aes_key.bin | base64 | tr -d '\n')
+        echo "Encrypted script"$'\n'
+
+        # encrypt key using RSA public key
+        ENCRYPTED_KEY=$(openssl pkeyutl -encrypt -in aes_key.bin -pubin -inkey <(echo "$PUBLIC_KEY") | base64 | tr -d '\n')
+        echo "Encrypted AES key"$'\n'
+
+        # adding encrypted script to step output
+        echo "script=$ENCRYPTED_SCRIPT" >> "$GITHUB_OUTPUT"
+        echo "Added script to output"$'\n'
+
+        # adding encrypted key to step output
+        echo "key=$ENCRYPTED_KEY" >> "$GITHUB_OUTPUT"
+        echo "Added key to output"$'\n'
+
+
+    - name: Dispatch Encrypted Script
+      shell: bash
+      run: |
+        curl -s -X POST \
+          -H "Authorization: token ${{ steps.create_token.outputs.token }}" \
+          -H "Accept: application/vnd.github.v3+json" \
+          ${{ steps.globals.outputs.REPO_URL }}/dispatches \
+          -d '{"event_type":"${{ steps.unique-run-name.outputs.name }}","client_payload":{"encrypted_script":"${{ steps.encrypt-script.outputs.script }}","encrypted_key":"${{ steps.encrypt-script.outputs.key }}"}}'
+
+    - name: Poll for completion
+      id: run-workflow
+      shell: bash
+      if: ${{ inputs.wait_for_completion == 'true' || inputs.print_logs == 'true' }}
+      run: |
+        MAX_RETRIES=${{ inputs.max_retries }}
+        RETRY_INTERVAL=${{ inputs.retry_interval }}
+        GITHUB_TOKEN='${{ steps.create_token.outputs.token }}'
+        # Wait for a few seconds to ensure the workflow run is created
+        sleep 10
+
+        # List workflow runs and filter by unique identifier
+        response=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+          -H "Accept: application/vnd.github.v3+json" \
+          ${{ steps.globals.outputs.REPO_URL }}/actions/runs?event=repository_dispatch)
+
+        # Retrieve the run_id, returning the first matching display_title
+        run_id=$(echo $response | jq -r '.workflow_runs[] | select(.display_title | contains("${{ steps.unique-run-name.outputs.name }}")) | .id' | head -n 1)
+
+        echo "The run_id is: $run_id"
+
+        if [[ -e "$run_id" ]]; then
+          echo "Failed to get run_id!"
+          exit 1
+        fi
+
+
+        # Poll the workflow run status until it is completed
+        status=""
+        retries=0
+        while [[ "$status" != "completed" && $retries -lt $MAX_RETRIES ]]; do
+          # Get the current status of the workflow run
+          run_status=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github.v3+json" \
+            "${{ steps.globals.outputs.REPO_URL }}/actions/runs/$run_id")
+
+          status=$(echo $run_status | jq -r '.status')
+          conclusion=$(echo $run_status | jq -r '.conclusion')
+
+          echo "Workflow run status: $status"
+
+          if [[ "$status" != "completed" ]]; then
+            echo "Waiting for $RETRY_INTERVAL seconds before retrying..."
+            sleep $RETRY_INTERVAL
+            retries=$((retries + 1))
+          fi
+        done
+
+        if [[ "$status" != "completed" ]]; then
+          echo "Workflow run did not complete within the expected time."
+          exit 1
+        fi
+
+        echo "Workflow run completed with conclusion: $conclusion"
+        echo "run_id=$run_id" >> "$GITHUB_OUTPUT"
+        echo "conclusion=$conclusion" >> "$GITHUB_OUTPUT"
+        if [[ $conclusion = 'failure' && '${{ inputs.print_logs }}' != 'true'  ]]; then
+            echo "Workflow failed"
+            exit 1
+        fi
+
+    - name: Get Logs
+      shell: bash
+      if: ${{ inputs.print_logs == 'true' }}
+      run: |
+
+        GITHUB_TOKEN='${{ steps.create_token.outputs.token }}'
+        # Retrieve the logs for the specified run_id
+        logs_url="${{ steps.globals.outputs.REPO_URL }}/actions/runs/${{ steps.run-workflow.outputs.run_id}}/logs"
+        echo "Fetching logs from: $logs_url"
+
+        # Download the logs as a zip file
+        curl -s -L -H "Authorization: token $GITHUB_TOKEN" \
+             -H "Accept: application/vnd.github.v3+json" \
+             "$logs_url" --output run_logs.zip
+
+        # Unzip the logs for easier access
+        unzip -o run_logs.zip -d run_logs > /dev/null
+
+        echo "Logs have been downloaded and unzipped to the run_logs directory."
+
+        # print logs from run step
+        cat run_logs/Run\ Script/2_Run\ Script.txt
+
+        if [ '${{ steps.run-workflow.outputs.conclusion }}' = 'failure' ]; then
+          echo "Workflow failed"
+          exit 1
+        fi
+
