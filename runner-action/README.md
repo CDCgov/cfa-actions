@@ -59,7 +59,7 @@ The following example uses the `az acr import` command to pull an image from GHC
     runs-on: ubuntu-latest
     steps:
     - name: ACR Import
-      uses: CDCgov/cfa-actions/runner-action@1.0.0 # check cfa-actions repo for latest tag
+      uses: CDCgov/cfa-actions/runner-action@1.3.0 # check cfa-actions repo for latest tag
       with:
         github_app_id: ${{ secrets.CDCENT_ACTOR_APP_ID }}
         github_app_pem: ${{ secrets.CDCENT_ACTOR_APP_PEM }}
@@ -126,7 +126,7 @@ If you have existing scripts in your repository, you can access them by using `g
     runs-on: ubuntu-latest
     steps:
     - name: Run Script
-      uses: CDCgov/cfa-actions/runner-action@1.0.0 # check cfa-actions repo for latest tag
+      uses: CDCgov/cfa-actions/runner-action@1.3.0 # check cfa-actions repo for latest tag
       with:
         github_app_id: ${{ secrets.CDCENT_ACTOR_APP_ID }}
         github_app_pem: ${{ secrets.CDCENT_ACTOR_APP_PEM }}
