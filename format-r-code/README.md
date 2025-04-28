@@ -20,14 +20,14 @@ To use this action in your workflow, add the following step:
 
 ```yaml
 - name: Format R code
-  uses: CDCgov/cfa-actions/format-r-code@v1
+  uses: CDCgov/cfa-actions/format-r-code@v1.4.0
 ```
 
 By default, `format-r-code` formats all R code in the repository. You can configure which directories or files are formatted with the `path` option. For example, the following formats only R files in the `R/` directory and the `app.R` file in the `my-example` Shiny app.
 
 ```yaml
 - name: Format R code
-  uses: CDCgov/cfa-actions/format-r-code@v1
+  uses: CDCgov/cfa-actions/format-r-code@v1.4.0
   with:
     path: R/ inst/examples-shiny/my-example/app.R
 ```
@@ -41,14 +41,14 @@ By default, `format-r-code` formats all R code in the repository. You can config
     git config --global user.email "$GITHUB_ACTOR@users.noreply.github.com"
 
 - name: Format R code
-  uses: CDCgov/cfa-actions/format-r-code@v1
+  uses: CDCgov/cfa-actions/format-r-code@v1.4.0
 ```
 
 On the other hand, if you'd rather check that the R code is already formatted as expected or have the workflow fail, set `check: true`:
 
 ```yaml
 - name: Format R code
-  uses: CDCgov/cfa-actions/format-r-code@v1
+  uses: CDCgov/cfa-actions/format-r-code@v1.4.0
   with:
     check: true
 ```
