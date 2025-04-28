@@ -1,6 +1,6 @@
 # Runner Action
 
-> [!IMPORTANT] 
+> [!IMPORTANT]
 > This action is intended for internal use. This action will not work if you use it in a repository outside of [CDCgov](https://github.com/CDCgov) or [CDCent](https://github.com/cdcent).
 
 This action allows you to securely run scripts on the Azure Container App runners in the Azure subscription from public runners. A Github App is required with 'read' permissions for Actions, Contents, and Metadata on the CDCEnt repo [cfa-cdcgov-actions](https://github.com/cdcent/cfa-cdcgov-actions).
@@ -38,15 +38,15 @@ The Container App runners have some limitations compared to `ubuntu-latest`, nam
 
 ## Inputs and Outputs
 
-| Field | Description | Required | Default |
-|-------|-------------|----------|---------|
-| `github_app_id` | A GitHub App ID installed on CDCEnt | true | |
-| `github_app_pem` | The PEM-encoded private key for the GitHub APP| true | |
-| `script` | A bash script to be run on the Azure self-hosted runner | true | |
-| `wait_for_completion` | true/false option to wait for the dispatched workflow to complete | false | false |
-| `print_logs` | true/false option to print the action logs once the workflow has completed | false | false |
-| `max_retries` | integer with max number of retries when using wait_for_completion or print_logs | false | 20 |
-| `retry_interval` | integer representing the number of seconds between retries | false | 15 |
+| Field                 | Description                                                                     | Required | Default |
+| --------------------- | ------------------------------------------------------------------------------- | -------- | ------- |
+| `github_app_id`       | A GitHub App ID installed on CDCEnt                                             | true     |         |
+| `github_app_pem`      | The PEM-encoded private key for the GitHub APP                                  | true     |         |
+| `script`              | A bash script to be run on the Azure self-hosted runner                         | true     |         |
+| `wait_for_completion` | true/false option to wait for the dispatched workflow to complete               | false    | false   |
+| `print_logs`          | true/false option to print the action logs once the workflow has completed      | false    | false   |
+| `max_retries`         | integer with max number of retries when using wait_for_completion or print_logs | false    | 20      |
+| `retry_interval`      | integer representing the number of seconds between retries                      | false    | 15      |
 
 ## Examples and Usage
 The script passed to this action is a normal bash script which means marketplace actions can't be used here.
@@ -59,7 +59,7 @@ The following example uses the `az acr import` command to pull an image from GHC
     runs-on: ubuntu-latest
     steps:
     - name: ACR Import
-      uses: CDCgov/cfa-actions/runner-action@1.3.0 # check cfa-actions repo for latest tag
+      uses: CDCgov/cfa-actions/runner-action@1.4.0 # check cfa-actions repo for latest tag
       with:
         github_app_id: ${{ secrets.CDCENT_ACTOR_APP_ID }}
         github_app_pem: ${{ secrets.CDCENT_ACTOR_APP_PEM }}
@@ -139,4 +139,4 @@ If you have existing scripts in your repository, you can access them by using `g
 
           chmod +x hello_world.sh
           ./hello_world.sh
-``` 
+```
