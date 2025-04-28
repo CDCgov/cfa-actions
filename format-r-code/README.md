@@ -1,6 +1,7 @@
 # format-r-code
 
 ## Format R code with air
+This action is copied from the [rstudio/shiny-workflows](https://github.com/rstudio/shiny-workflows/tree/7efb26e82a6b58deef846d8e3abef7eb0a533038/format-r-code) repository.
 
 This GitHub Action automatically formats R code using the [air formatter](https://posit-dev.github.io/air), a new, blazing-fast R code formatter from [Posit](https://posit.co).
 
