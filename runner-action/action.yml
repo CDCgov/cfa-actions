@@ -19,17 +19,17 @@ inputs:
       A bash script to be run on the Azure self-hosted runner
     required: true
   wait_for_completion:
-    description: true/false to wait for the dispatched workflow to complete
+    description: true/false to wait for the dispatched workflow to complete. Default=true
     required: false
-    default: false
+    default: true
   print_logs:
-    description: true/false to print the action logs once the workflow has completed
+    description: true/false to print the action logs once the workflow has completed. Default=true
     required: false
-    default: false
+    default: true
   max_retries:
-    description: integer with max number of retries when using wait_for_completion or print_logs. Default=20
+    description: integer with max number of retries when using wait_for_completion or print_logs. Default=120
     required: false
-    default: 20
+    default: 120
   retry_interval:
     description: integer representing the number of seconds between retries. Default=15
     required: false
@@ -59,7 +59,7 @@ runs:
       shell: bash
       id: unique-run-name
       run: |
-        echo "name=${{ github.repository_owner }}_${{ github.event.repository.name }}_${{ github.run_id }}" >> "$GITHUB_OUTPUT"
+        echo "name=${{ github.repository_owner }}_${{ github.event.repository.name }}_${{ github.run_id }}_$(uuidgen)" >> "$GITHUB_OUTPUT"
 
     - name: Encrypt Script
       shell: bash
