@@ -134,7 +134,7 @@ jobs:
     steps:
       - name: Login to Azure
         id: azure_login_2
-        uses: azure/login@v2
+        uses: azure/login@v3
         with:
           creds: ${{ secrets.AZ_SERVICE_PRINCIPAL_CREDS_STRING }}
 
