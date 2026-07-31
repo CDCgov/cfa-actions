@@ -40,7 +40,7 @@ The Container App runners have some limitations compared to `ubuntu-latest`, nam
 
 | Field                 | Description                                                                     | Required | Default |
 | --------------------- | ------------------------------------------------------------------------------- | -------- | ------- |
-| `github_app_id`       | A GitHub App ID installed on CDCEnt                                             | true     |         |
+| `github_app_id`       | A GitHub App client ID or legacy numeric App ID installed on CDCEnt             | true     |         |
 | `github_app_pem`      | The PEM-encoded private key for the GitHub APP                                  | true     |         |
 | `script`              | A bash script to be run on the Azure self-hosted runner                         | true     |         |
 | `wait_for_completion` | true/false option to wait for the dispatched workflow to complete               | false    | false   |

@@ -8,7 +8,7 @@ description: |
 inputs:
   github_app_id:
     description: |
-      A GitHub App ID installed on CDCEnt
+      A GitHub App client ID or legacy numeric App ID installed on CDCEnt
     required: true
   github_app_pem: 
     description: |
@@ -49,9 +49,9 @@ runs:
 
     - name: Create GitHub App token
       id: create_token
-      uses: actions/create-github-app-token@v1
+      uses: actions/create-github-app-token@v3
       with:
-        app-id: ${{ inputs.github_app_id }}
+        client-id: ${{ inputs.github_app_id }}
         private-key: ${{ inputs.github_app_pem }}
         owner: ${{ steps.globals.outputs.OWNER }}
 
@@ -202,4 +202,3 @@ runs:
           echo "Workflow failed"
           exit 1
         fi
-
