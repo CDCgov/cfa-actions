@@ -207,7 +207,7 @@ runs:
 
     - name: Build and push
       if: steps.cache.outputs.cache-hit != 'true' || steps.pull-image.outputs.image-found != 'true'
-      uses: docker/build-push-action@v6
+      uses: docker/build-push-action@v7
       with:
         no-cache: true
         push: ${{ inputs.push-image-1 }}
@@ -222,7 +222,7 @@ runs:
 
     - name: Build and push the main image
       id: build_and_push_model_image
-      uses: docker/build-push-action@v6
+      uses: docker/build-push-action@v7
       with:
         no-cache: true
         push: ${{ inputs.push-image-2 }}
