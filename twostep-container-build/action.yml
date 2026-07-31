@@ -139,7 +139,7 @@ runs:
         echo "::endgroup::"
 
     - name: Checking out the latest (may be merge if PR)
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
 
     # From: https://stackoverflow.com/a/58035262/2097171
     - name: Extract branch name
