@@ -122,42 +122,59 @@ runs:
         MAX_RETRIES=${{ inputs.max_retries }}
         RETRY_INTERVAL=${{ inputs.retry_interval }}
         GITHUB_TOKEN='${{ steps.create_token.outputs.token }}'
-        # Wait for a few seconds to ensure the workflow run is created
-        sleep 10
 
-        # List workflow runs and filter by unique identifier
-        response=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
-          -H "Accept: application/vnd.github.v3+json" \
-          ${{ steps.globals.outputs.REPO_URL }}/actions/runs?event=repository_dispatch)
+        run_id=""
 
         # Retrieve the run_id, returning the first matching display_title
-        run_id=$(echo $response | jq -r '.workflow_runs[] | select(.display_title | contains("${{ steps.unique-run-name.outputs.name }}")) | .id' | head -n 1)
+        # We have to poll since it might not be available immediately
+        discovery_retries=0
 
-        echo "The run_id is: $run_id"
+        while [[ -z "$run_id" && $discovery_retries -lt $MAX_RETRIES ]]; do
+          response=$(curl -sS \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "${{ steps.globals.outputs.REPO_URL }}/actions/runs?event=repository_dispatch&per_page=100")
 
-        if [[ -e "$run_id" ]]; then
-          echo "Failed to get run_id!"
+          run_id=$(echo "$response" |
+            jq -r '.workflow_runs[]
+              | select(.display_title | contains("${{ steps.unique-run-name.outputs.name }}"))
+              | .id' |
+            head -n 1)
+
+          if [[ -n "$run_id" ]]; then
+            break
+          fi
+
+          echo "Workflow run not found yet. Waiting $RETRY_INTERVAL seconds..."
+          sleep "$RETRY_INTERVAL"
+          discovery_retries=$((discovery_retries + 1))
+        done
+
+        if [[ -z "$run_id" ]]; then
+          echo "Failed to find workflow run after $discovery_retries attempts."
           exit 1
         fi
 
+        echo "The run_id is: $run_id"
 
         # Poll the workflow run status until it is completed
         status=""
         retries=0
+
         while [[ "$status" != "completed" && $retries -lt $MAX_RETRIES ]]; do
-          # Get the current status of the workflow run
-          run_status=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
-            -H "Accept: application/vnd.github.v3+json" \
+          run_status=$(curl -sS \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
             "${{ steps.globals.outputs.REPO_URL }}/actions/runs/$run_id")
 
-          status=$(echo $run_status | jq -r '.status')
-          conclusion=$(echo $run_status | jq -r '.conclusion')
+          status=$(echo "$run_status" | jq -r '.status')
+          conclusion=$(echo "$run_status" | jq -r '.conclusion')
 
           echo "Workflow run status: $status"
 
           if [[ "$status" != "completed" ]]; then
             echo "Waiting for $RETRY_INTERVAL seconds before retrying..."
-            sleep $RETRY_INTERVAL
+            sleep "$RETRY_INTERVAL"
             retries=$((retries + 1))
           fi
         done
