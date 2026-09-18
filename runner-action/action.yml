@@ -67,13 +67,13 @@ runs:
       run: |
 
         PUBLIC_KEY="-----BEGIN PUBLIC KEY-----
-        MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAli9U3+pvL8lOhbHcAkBa
-        UbhZO4MCwCRxJwMC1tzHMBKcG2SeLv0lFto/QtfAfyamjd/fgyr37p6olMkQB1xr
-        oF9lt/OVUMLhM3F4wz7voYH+SKwMC/H241CHfWN8vnsmFwGVGQVRYKnVbA7pnp9r
-        9JfB6W0S4TNYE/30vOl2z9vZMa+pBY2nqpTH3PvS3JPfcX+bCqlnL2YX8TSiWIWb
-        ubbzJdWpLzKiwziCNFtTNc2+WEuwcSEURLd9NfFSXZPjJXc2rWxkjLdbcCArVwnB
-        aPp1/uwOedARtv3Us/jcP/FrRoQk/DBYrGSPplYzxnl+E780N4LveXxuvkq/Ad2E
-        0QIDAQAB
+        MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAny6aeZXuvsJuCEeU+yQY
+        72/C1pTMzVx7OB3+ix4vL68EEBCN5w4UZYFZYkyZ4dKRvnuDKtxtBx98h1eUPwAW
+        jHkSOvHy5zcGQQhLM6G7sISy6ANpFY8/DFPWFgSmBPLF7GZxPaWdlqFXReDVYVUe
+        xJlZdSKDvHo3z7ERG0zpY/Quf78toY7zR9JWnIaI+LpYeto5t2c7HD41GcPUlp5e
+        fHu7XZMeXdzx8zBTT7Mig28J3eEhhQWnriCyNsqsLHu0JhwPMgU196j6vz2H/eNg
+        /332jWZ1+qOAM7RDOfGQ0oFb+IiXvIieuCoF5p4z9bYONhgEHrBX8vavLfCYfunD
+        BwIDAQAB
         -----END PUBLIC KEY-----"
         echo "$PUBLIC_KEY"$'\n'
 
