@@ -110,8 +110,7 @@ runs:
       shell: bash
       run: |
         GITHUB_TOKEN='${{ steps.create_token.outputs.token }}'
-        # TODO: gio-wf-dispatch -> main
-        dispatch_payload='{"ref":"gio-wf-dispatch","inputs":{"run_name":"${{ steps.unique-run-name.outputs.name }}","encrypted_script":"${{ steps.encrypt-script.outputs.script }}","encrypted_key":"${{ steps.encrypt-script.outputs.key }}"}}'
+        dispatch_payload='{"ref":"v1.0.0","inputs":{"run_name":"${{ steps.unique-run-name.outputs.name }}","encrypted_script":"${{ steps.encrypt-script.outputs.script }}","encrypted_key":"${{ steps.encrypt-script.outputs.key }}"}}'
 
         payload_size=$(printf '%s' "$dispatch_payload" | wc -c)
         if [[ "$payload_size" -gt 65535 ]]; then
