@@ -46,6 +46,7 @@ runs:
         OWNER='cdcent'
         echo "OWNER=$OWNER" >> "$GITHUB_OUTPUT"
         echo "REPO_URL=https://api.github.com/repos/$OWNER/cfa-cdcgov-actions" >> "$GITHUB_OUTPUT"
+        echo "WORKFLOW_ID=runner-action.yaml" >> "$GITHUB_OUTPUT"
 
     - name: Create GitHub App token
       id: create_token
@@ -108,11 +109,26 @@ runs:
     - name: Dispatch Encrypted Script
       shell: bash
       run: |
-        curl -s -X POST \
-          -H "Authorization: token ${{ steps.create_token.outputs.token }}" \
-          -H "Accept: application/vnd.github.v3+json" \
-          ${{ steps.globals.outputs.REPO_URL }}/dispatches \
-          -d '{"event_type":"${{ steps.unique-run-name.outputs.name }}","client_payload":{"encrypted_script":"${{ steps.encrypt-script.outputs.script }}","encrypted_key":"${{ steps.encrypt-script.outputs.key }}"}}'
+        GITHUB_TOKEN='${{ steps.create_token.outputs.token }}'
+        dispatch_payload='{"ref":"v1.0.0","inputs":{"run_name":"${{ steps.unique-run-name.outputs.name }}","encrypted_script":"${{ steps.encrypt-script.outputs.script }}","encrypted_key":"${{ steps.encrypt-script.outputs.key }}"}}'
+
+        payload_size=$(printf '%s' "$dispatch_payload" | wc -c)
+        if [[ "$payload_size" -gt 65535 ]]; then
+          echo "Workflow dispatch payload is too large: ${payload_size} bytes (maximum is 65535)."
+          exit 1
+        fi
+
+        if ! response=$(curl --fail-with-body -sS \
+          -X POST \
+          -H "Authorization: Bearer $GITHUB_TOKEN" \
+          -H "Accept: application/vnd.github+json" \
+          -H "X-GitHub-Api-Version: 2026-03-10" \
+          "${{ steps.globals.outputs.REPO_URL }}/actions/workflows/${{ steps.globals.outputs.WORKFLOW_ID }}/dispatches" \
+          -d "$dispatch_payload"); then
+          echo "Workflow dispatch failed."
+          printf '%s\n' "$response"
+          exit 1
+        fi
 
     - name: Poll for completion
       id: run-workflow
@@ -122,6 +138,7 @@ runs:
         MAX_RETRIES=${{ inputs.max_retries }}
         RETRY_INTERVAL=${{ inputs.retry_interval }}
         GITHUB_TOKEN='${{ steps.create_token.outputs.token }}'
+        RUN_NAME='${{ steps.unique-run-name.outputs.name }}'
 
         run_id=""
 
@@ -133,11 +150,12 @@ runs:
           response=$(curl -sS \
             -H "Authorization: Bearer $GITHUB_TOKEN" \
             -H "Accept: application/vnd.github+json" \
-            "${{ steps.globals.outputs.REPO_URL }}/actions/runs?event=repository_dispatch&per_page=100")
+            -H "X-GitHub-Api-Version: 2026-03-10" \
+            "${{ steps.globals.outputs.REPO_URL }}/actions/workflows/${{ steps.globals.outputs.WORKFLOW_ID }}/runs?event=workflow_dispatch&per_page=100")
 
           run_id=$(echo "$response" |
-            jq -r '.workflow_runs[]
-              | select(.display_title | contains("${{ steps.unique-run-name.outputs.name }}"))
+            jq -r --arg run_name "$RUN_NAME" '.workflow_runs[]
+              | select(.display_title | contains($run_name))
               | .id' |
             head -n 1)
 
@@ -165,6 +183,7 @@ runs:
           run_status=$(curl -sS \
             -H "Authorization: Bearer $GITHUB_TOKEN" \
             -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2026-03-10" \
             "${{ steps.globals.outputs.REPO_URL }}/actions/runs/$run_id")
 
           status=$(echo "$run_status" | jq -r '.status')

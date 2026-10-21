@@ -3,11 +3,13 @@
 > [!IMPORTANT]
 > This action is intended for internal use. This action will not work if you use it in a repository outside of [CDCgov](https://github.com/CDCgov) or [CDCent](https://github.com/cdcent).
 
-This action allows you to securely run scripts on the Azure Container App runners in the Azure subscription from public runners. A Github App is required with 'read' permissions for Actions, Contents, and Metadata on the CDCEnt repo [cfa-cdcgov-actions](https://github.com/cdcent/cfa-cdcgov-actions).
+This action allows you to securely run scripts on the Azure Container App runners in the Azure subscription from public runners. A Github App is required with 'write' permissions for Actions and 'read' permissions for Contents and Metadata on the CDCEnt repo [cfa-cdcgov-actions](https://github.com/cdcent/cfa-cdcgov-actions).
 If you do not have a GitHub App, you can find an [app id](https://portal.azure.com/#view/Microsoft_Azure_KeyVault/ListObjectVersionsRBACBlade/~/overview/objectType/secrets/objectId/https%3A%2F%2Fcfa-predict.vault.azure.net%2Fsecrets%2Fcfa-cdcgov-actions-app-id/vaultResourceUri/%2Fsubscriptions%2Fef340bd6-2809-4635-b18b-7e6583a8803b%2FresourceGroups%2FEXT-EDAV-CFA-PRD%2Fproviders%2FMicrosoft.KeyVault%2Fvaults%2FCFA-Predict/vaultId/%2Fsubscriptions%2Fef340bd6-2809-4635-b18b-7e6583a8803b%2FresourceGroups%2Fext-edav-cfa-prd%2Fproviders%2FMicrosoft.KeyVault%2Fvaults%2FCFA-Predict) and [pem](https://portal.azure.com/#view/Microsoft_Azure_KeyVault/ListObjectVersionsRBACBlade/~/overview/objectType/secrets/objectId/https%3A%2F%2Fcfa-predict.vault.azure.net%2Fsecrets%2Fcfa-cdcgov-actions-private-key/vaultResourceUri/%2Fsubscriptions%2Fef340bd6-2809-4635-b18b-7e6583a8803b%2FresourceGroups%2FEXT-EDAV-CFA-PRD%2Fproviders%2FMicrosoft.KeyVault%2Fvaults%2FCFA-Predict/vaultId/%2Fsubscriptions%2Fef340bd6-2809-4635-b18b-7e6583a8803b%2FresourceGroups%2Fext-edav-cfa-prd%2Fproviders%2FMicrosoft.KeyVault%2Fvaults%2FCFA-Predict) in the CFA Predict Key Vault.
 If you have an existing GitHub App or would like to request a new one, you can reach out to the [CDC GitHub team](mailto:github@cdc.gov).
 
-Behind the scenes, this action encrypts the input script and uses repository_dispatch to pass the script to the cfa-cdcgov-actions repo to run on a self-hosted Azure Container App runner.
+Behind the scenes, this action encrypts the input script and uses the `runner-action.yaml` workflow's `workflow_dispatch` trigger to pass the script to the cfa-cdcgov-actions repo to run on a self-hosted Azure Container App runner. The receiver workflow must be present on its `main` branch and accept the `run_name`, `encrypted_script`, and `encrypted_key` string inputs.
+
+Workflow dispatch inputs have a 65,535-byte payload limit. Scripts whose encrypted payload exceeds that limit cannot be submitted by this action.
 
 ```mermaid
 sequenceDiagram
@@ -59,7 +61,7 @@ The following example uses the `az acr import` command to pull an image from GHC
     runs-on: ubuntu-latest
     steps:
     - name: ACR Import
-      uses: CDCgov/cfa-actions/runner-action@v1.7.0 # check cfa-actions repo for latest release version
+      uses: CDCgov/cfa-actions/runner-action@v1.8.0 # check cfa-actions repo for latest release version
       with:
         github_app_id: ${{ secrets.CDCENT_ACTOR_APP_ID }}
         github_app_pem: ${{ secrets.CDCENT_ACTOR_APP_PEM }}
@@ -126,7 +128,7 @@ If you have existing scripts in your repository, you can access them by using `g
     runs-on: ubuntu-latest
     steps:
     - name: Run Script
-      uses: CDCgov/cfa-actions/runner-action@v1.7.0 # check cfa-actions repo for latest release version
+      uses: CDCgov/cfa-actions/runner-action@v1.8.0 # check cfa-actions repo for latest release version
       with:
         github_app_id: ${{ secrets.CDCENT_ACTOR_APP_ID }}
         github_app_pem: ${{ secrets.CDCENT_ACTOR_APP_PEM }}
